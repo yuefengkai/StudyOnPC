@@ -1,4 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
+# One-file Windows build: single StudyOnPC.exe (resources in _MEIPASS at runtime).
 from pathlib import Path
 from PyInstaller.utils.hooks import collect_all, collect_submodules
 
@@ -7,7 +8,7 @@ root = Path(SPECPATH)
 
 _cfg = root / "config.json" if (root / "config.json").is_file() else root / "config.example.json"
 datas = [
-    # Bundle local config when present; otherwise example (build_exe also seeds writable config.json)
+    # Bundle local config when present; otherwise example (runtime seeds writable config.json beside exe)
     (str(_cfg), "."),
     (str(root / "config.example.json"), "."),
     (str(root / "data" / "banks"), "data/banks"),
@@ -73,28 +74,21 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name="StudyOnPC",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
-    name="StudyOnPC",
 )

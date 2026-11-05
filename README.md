@@ -18,10 +18,12 @@ cd C:\path\to\StudyOnPC
 
 产物默认复制到项目旁的 `StudyOnPC-dist\`（可用环境变量 `STUDYONPC_DIST` 覆盖）：
 
-- `StudyOnPC.exe`（onedir，旁路 `_internal`）
-- 可写数据：`config.json`、`data\`、`logs\`（不会写进 `_MEIPASS`）
-- 启动：`start.bat` 或 `install.ps1`（开机启动）
+- **`StudyOnPC.exe`（onefile 单文件）** — CI Artifact 也只上传这一个 exe
+- 首次运行会在 **exe 同目录** 自动写出可写数据：`config.json`、`data\`、`logs\`、`scripts\set_mute.ps1`（从包内 `_MEIPASS` 播种；不会改只读临时解压目录）
+- 开机启动 / 卸载等辅助脚本仍在源码仓库（`install.ps1`、`uninstall.ps1`、`parent_quit.ps1`），需要时拷到 exe 旁边再跑
 - CLI：`StudyOnPC.exe --once --force` / `--role=watchdog`
+
+> onefile 启动时会解压到临时目录，冷启动比 onedir 稍慢；日常使用仍只需分发这一个 exe。
 
 家长管理页（同一 WiFi）：`http://电脑IP:8099/` 与 `/admin`（卡片仪表盘、规则、题库、强制出题、答题记录）。
 

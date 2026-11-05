@@ -47,23 +47,26 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install -U pyinstaller
 
-      - name: Build onedir package
+      - name: Build onefile exe
         shell: pwsh
         env:
-          # Keep dist inside the workspace for artifact upload
           STUDYONPC_DIST: ${{ github.workspace }}\StudyOnPC-dist
         run: |
-          # No config.json in CI — build_exe.ps1 seeds from config.example.json
           if (Test-Path config.json) { throw 'config.json must not be present in CI checkout' }
           powershell -ExecutionPolicy Bypass -File .\build_exe.ps1
           $exe = Join-Path $env:STUDYONPC_DIST 'StudyOnPC.exe'
           if (-not (Test-Path $exe)) { throw "Missing built exe: $exe" }
-          Get-Item $exe | Format-List FullName, Length, LastWriteTime
+          $item = Get-Item $exe
+          Write-Host ("Built {0} ({1:N0} bytes)" -f $item.FullName, $item.Length)
+          # Guard: onefile should not ship an _internal folder
+          if (Test-Path (Join-Path $env:STUDYONPC_DIST '_internal')) {
+            throw 'Unexpected _internal folder — build still looks like onedir'
+          }
 
-      - name: Upload StudyOnPC-dist artifact
+      - name: Upload StudyOnPC.exe artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StudyOnPC-windows-onedir
-          path: StudyOnPC-dist/**
+          name: StudyOnPC-windows-onefile
+          path: StudyOnPC-dist/StudyOnPC.exe
           if-no-files-found: error
           retention-days: 30
