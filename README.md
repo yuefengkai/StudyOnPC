@@ -68,7 +68,7 @@ cd C:\path\to\StudyOnPC
 | **临时退出** | **Ctrl+Shift+Q**，或运行 `parent_quit.ps1`，输入你在 `config.json` 里设置的 PIN |
 | **彻底卸载** | `uninstall.ps1` → 输入 PIN |
 | **改 PIN / 规则** | 编辑 `config.json`，或打开管理页 `http://电脑IP:8099/admin` |
-| **强制出一题组** | 管理页「立即出题」，或 `python studyonpc.py --once --force` |
+| **强制出一题组** | 管理页「立即出题」，或 `pythonw studyonpc.py --once --force`（要看控制台则加 `--console`） |
 
 仓库只提交 **`config.example.json`**（示例口令仅为占位，见该文件）。本地真实口令写在 **`config.json`**（已 gitignore，请勿提交）。
 
@@ -84,7 +84,9 @@ pip install -r requirements.txt
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-也可双击 `start.bat`（关黑窗口不停）。调试：`start-console.bat`。
+也可双击 **`start.vbs` / `start.bat`**（`pythonw` 隐藏启动，无黑窗口；关这个启动窗也停不掉进程）。调试看日志请用 **`start-console.bat`**（会显示控制台，带 `--console`）。
+
+打包的 `StudyOnPC.exe`（`StudyOnPC.spec` 已 `console=False`）本身无控制台；看门狗互拉也走 `pythonw` / 无窗口子进程。
 
 ## 默认规则（见 `config.example.json`）
 

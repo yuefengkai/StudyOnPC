@@ -525,8 +525,11 @@ class StudyApp:
 
 
 def main(argv: list[str] | None = None) -> None:
-    setup_logging()
     argv = list(argv if argv is not None else sys.argv[1:])
+    # Drop black console for normal runs (python.exe → pythonw). Keep --console for debug.
+    if win_yt.reexec_without_console(argv):
+        return
+    setup_logging()
     role = "main"
     for a in argv:
         if a.startswith("--role="):

@@ -218,6 +218,45 @@ def preferred_python() -> str:
     return py
 
 
+def should_hide_console(argv: list[str] | None = None) -> bool:
+    """True when we should avoid a black console (normal kid run)."""
+    if not IS_WINDOWS:
+        return False
+    if getattr(sys, "frozen", False):
+        return False  # StudyOnPC.spec already sets console=False
+    args = list(argv if argv is not None else sys.argv[1:])
+    if "--console" in args:
+        return False
+    return sys.executable.lower().endswith("python.exe")
+
+
+def reexec_without_console(argv: list[str] | None = None) -> bool:
+    """If started via python.exe without --console, respawn with pythonw and exit.
+
+    Returns True if a hidden child was spawned (caller must return immediately).
+    """
+    if not should_hide_console(argv):
+        return False
+    from pathlib import Path
+
+    pyw = Path(sys.executable).with_name("pythonw.exe")
+    if not pyw.exists():
+        log.warning("pythonw.exe missing next to %s — console may stay visible", sys.executable)
+        return False
+    args_in = list(argv if argv is not None else sys.argv[1:])
+    # Prefer launching the repo entry script so relative imports match double-click.
+    entry = Path(sys.argv[0]).resolve() if sys.argv else None
+    if entry and entry.suffix.lower() == ".py":
+        cmd = [str(pyw), str(entry), *args_in]
+        cwd = str(entry.parent)
+    else:
+        cmd = [str(pyw), "-m", "studyonpc.app", *args_in]
+        cwd = os.getcwd()
+    log.info("re-exec without console: %s", cmd)
+    spawn_detached(cmd, cwd=cwd)
+    return True
+
+
 def spawn_detached(args: list[str], cwd: str) -> None:
     creation = 0
     if IS_WINDOWS:

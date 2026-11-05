@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
-"""StudyOnPC entry point. Usage:
+"""StudyOnPC entry point.
+
+Normal (no black console):
   pythonw studyonpc.py --role=watchdog
-  pythonw studyonpc.py --role=main
-  python studyonpc.py --once --force
+  double-click start.bat / start.vbs
+
+Debug console:
+  start-console.bat
+  python studyonpc.py --console --role=main --force
 """
 from __future__ import annotations
 
