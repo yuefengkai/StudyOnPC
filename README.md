@@ -6,6 +6,22 @@
 
 前台检测 / 静音 / PIN / 看门狗升级自本机既有「YouTube 一年级助手」。
 
+## 界面预览
+
+全屏答题界面（带拼音标注），答对够题数才解锁观看时长：
+
+![英语礼貌用语答题](docs/screenshots/quiz-english.png)
+
+*英语 · 礼貌用语*
+
+![英语动物单元答题](docs/screenshots/quiz-animals.png)
+
+*英语 · Unit5 动物*
+
+![语文拼音拼读答题](docs/screenshots/quiz-pinyin.png)
+
+*语文 · 拼音拼读*
+
 
 ## Windows 可执行文件（推荐）
 
