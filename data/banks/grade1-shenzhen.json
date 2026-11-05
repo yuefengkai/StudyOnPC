@@ -1,0 +1,2370 @@
+{
+  "name": "深圳一年级（语文+数学+英语）",
+  "version": 2,
+  "source": "migrated + expanded original Grade1 practice (not textbook verbatim)",
+  "questions": [
+    {
+      "id": 1,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·5以内加减",
+      "q": "3 + 2 = ？",
+      "a": "5",
+      "choices": [
+        "4",
+        "5",
+        "6",
+        "3"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/math_3plus2.png"
+    },
+    {
+      "id": 2,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·5以内加减",
+      "q": "5 - 1 = ？",
+      "a": "4",
+      "choices": [
+        "3",
+        "4",
+        "5",
+        "2"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 3,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·5以内加减",
+      "q": "0 + 4 = ？",
+      "a": "4",
+      "choices": [
+        "0",
+        "3",
+        "4",
+        "5"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 4,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·比大小",
+      "q": "2 和 5，哪个更大？",
+      "a": "5",
+      "choices": [
+        "2",
+        "5",
+        "一样大",
+        "不知道"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·分与合",
+      "q": "5 可以分成 2 和几？",
+      "a": "3",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/math_split5.png"
+    },
+    {
+      "id": 6,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "6 + 3 = ？",
+      "a": "9",
+      "choices": [
+        "8",
+        "9",
+        "10",
+        "7"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 7,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "8 - 5 = ？",
+      "a": "3",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "13"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 8,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "9 + 1 = ？",
+      "a": "10",
+      "choices": [
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 9,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "10 - 4 = ？",
+      "a": "6",
+      "choices": [
+        "5",
+        "6",
+        "7",
+        "14"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 10,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "2 + 3 + 4 = ？",
+      "a": "9",
+      "choices": [
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 11,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·加减混合",
+      "q": "5 + 4 - 2 = ？",
+      "a": "7",
+      "choices": [
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 12,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·立体图形",
+      "q": "皮球大概是什么形状？",
+      "a": "球",
+      "choices": [
+        "正方体",
+        "长方体",
+        "圆柱",
+        "球"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/shape_ball.png"
+    },
+    {
+      "id": 13,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·立体图形",
+      "q": "魔方最像哪个立体图形？",
+      "a": "正方体",
+      "choices": [
+        "正方体",
+        "圆柱",
+        "球",
+        "圆锥"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/shape_cube.png"
+    },
+    {
+      "id": 14,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·立体图形",
+      "q": "易拉罐最像哪个？",
+      "a": "圆柱",
+      "choices": [
+        "正方体",
+        "长方体",
+        "圆柱",
+        "球"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/shape_cylinder.png"
+    },
+    {
+      "id": 15,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "13 里面有几个十和几个一？",
+      "a": "1个十和3个一",
+      "choices": [
+        "1个十和3个一",
+        "3个十和1个一",
+        "13个十",
+        "10个一"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 16,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "16 的后面是几？",
+      "a": "17",
+      "choices": [
+        "15",
+        "16",
+        "17",
+        "18"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 17,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "11 + 2 = ？",
+      "a": "13",
+      "choices": [
+        "12",
+        "13",
+        "14",
+        "9"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 18,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·20以内进位加法",
+      "q": "9 + 4 = ？（凑十法）",
+      "a": "13",
+      "choices": [
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/math_9plus4.png"
+    },
+    {
+      "id": 19,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·20以内进位加法",
+      "q": "8 + 5 = ？",
+      "a": "13",
+      "choices": [
+        "12",
+        "13",
+        "14",
+        "3"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 20,
+      "type": "single",
+      "subject": "数学",
+      "unit": "下册预习·平面图形",
+      "q": "有 3 条边、3 个角的是？",
+      "a": "三角形",
+      "choices": [
+        "长方形",
+        "正方形",
+        "三角形",
+        "圆"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/shape_triangle.png"
+    },
+    {
+      "id": 21,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·天地人",
+      "q": "「天」字读音是？",
+      "a": "tiān",
+      "choices": [
+        "tiān",
+        "tián",
+        "diān",
+        "tān"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 22,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·天地人",
+      "q": "「人」字读音是？",
+      "a": "rén",
+      "choices": [
+        "rén",
+        "rèn",
+        "lén",
+        "yén"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 23,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·金木水火土",
+      "q": "「水」字读音是？",
+      "a": "shuǐ",
+      "choices": [
+        "shuī",
+        "shuǐ",
+        "suǐ",
+        "chuǐ"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 24,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·金木水火土",
+      "q": "「火」字读音是？",
+      "a": "huǒ",
+      "choices": [
+        "huō",
+        "huó",
+        "huǒ",
+        "fǒ"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 25,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·口耳目手足",
+      "q": "用眼睛看，对应哪个字？",
+      "a": "目",
+      "choices": [
+        "口",
+        "耳",
+        "目",
+        "手"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/yuwen_mu.png"
+    },
+    {
+      "id": 26,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·口耳目手足",
+      "q": "「手」字读音是？",
+      "a": "shǒu",
+      "choices": [
+        "sǒu",
+        "shǒu",
+        "shòu",
+        "zhǒu"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 27,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·日月山川",
+      "q": "「山」字读音是？",
+      "a": "shān",
+      "choices": [
+        "sān",
+        "shān",
+        "shàn",
+        "chān"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 28,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·日月山川",
+      "q": "「月」字读音是？",
+      "a": "yuè",
+      "choices": [
+        "yuē",
+        "yuè",
+        "yue",
+        "nüè"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 29,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音",
+      "q": "单韵母 a o e 里，嘴巴张最大的是？",
+      "a": "a",
+      "choices": [
+        "a",
+        "o",
+        "e",
+        "都一样"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 30,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音",
+      "q": "声母 b p m f 里，要送气的是？",
+      "a": "p",
+      "choices": [
+        "b",
+        "p",
+        "m",
+        "f"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 31,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音",
+      "q": "整体认读音节是哪一个？",
+      "a": "zhi",
+      "choices": [
+        "zha",
+        "zhi",
+        "zhu",
+        "zhe"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 32,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音",
+      "q": "前鼻音韵母是哪一组？",
+      "a": "an en in",
+      "choices": [
+        "an en in",
+        "ang eng ing",
+        "ao ou iu",
+        "ie üe er"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 33,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·日月明",
+      "q": "「日」和「月」合在一起是？",
+      "a": "明",
+      "choices": [
+        "明",
+        "朋",
+        "萌",
+        "盟"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/yuwen_ming.png"
+    },
+    {
+      "id": 34,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·对韵歌",
+      "q": "「云对雨，雪对？」",
+      "a": "风",
+      "choices": [
+        "风",
+        "雷",
+        "电",
+        "霜"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 35,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·小小的船",
+      "q": "弯弯的月儿像什么？",
+      "a": "小船",
+      "choices": [
+        "香蕉",
+        "小船",
+        "镰刀",
+        "眉毛"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/yuwen_boat.png"
+    },
+    {
+      "id": 36,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·乌鸦喝水",
+      "q": "乌鸦怎样喝到水？",
+      "a": "把石子放进瓶子",
+      "choices": [
+        "打破瓶子",
+        "把石子放进瓶子",
+        "找吸管",
+        "叫人帮忙"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/yuwen_crow.png"
+    },
+    {
+      "id": 37,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·比尾巴",
+      "q": "谁的尾巴长？谁的短？（课文）",
+      "a": "猴子长，兔子短",
+      "choices": [
+        "猴子长，兔子短",
+        "兔子长，猴子短",
+        "鸭子长，孔雀短",
+        "一样长"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 38,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·秋天",
+      "q": "《秋天》里天气怎样了？",
+      "a": "凉了",
+      "choices": [
+        "热了",
+        "凉了",
+        "下雪了",
+        "刮风下雨"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 39,
+      "type": "single",
+      "subject": "语文",
+      "unit": "下册预习·静夜思",
+      "q": "床前______光",
+      "a": "明月光",
+      "choices": [
+        "明月光",
+        "白雪光",
+        "灯光",
+        "阳光"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 40,
+      "type": "single",
+      "subject": "语文",
+      "unit": "综合·反义词",
+      "q": "「大」的反义词是？",
+      "a": "小",
+      "choices": [
+        "多",
+        "少",
+        "小",
+        "高"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 41,
+      "type": "single",
+      "subject": "英语",
+      "unit": "字母启蒙",
+      "q": "字母表第一个字母是？",
+      "a": "A",
+      "choices": [
+        "A",
+        "B",
+        "C",
+        "Z"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 42,
+      "type": "single",
+      "subject": "英语",
+      "unit": "字母启蒙",
+      "q": "哪个字母容易和 b 搞混？",
+      "a": "d",
+      "choices": [
+        "a",
+        "c",
+        "d",
+        "e"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 43,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "「妈妈」用英语怎么说？",
+      "a": "mum",
+      "choices": [
+        "dad",
+        "mum",
+        "bag",
+        "cat"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_family.png"
+    },
+    {
+      "id": 44,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "「爸爸」用英语怎么说？",
+      "a": "dad",
+      "choices": [
+        "mum",
+        "dad",
+        "dog",
+        "red"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_family.png"
+    },
+    {
+      "id": 45,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "grandpa 是什么意思？",
+      "a": "爷爷/外公",
+      "choices": [
+        "妈妈",
+        "爸爸",
+        "爷爷/外公",
+        "同学"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 46,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit2 情绪问候",
+      "q": "别人问 How are you? 开心时可以说？",
+      "a": "I'm happy",
+      "choices": [
+        "I'm sad",
+        "I'm happy",
+        "Goodbye",
+        "Thank you"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_feelings.png"
+    },
+    {
+      "id": 47,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit2 情绪",
+      "q": "sad 是什么意思？",
+      "a": "难过的",
+      "choices": [
+        "开心的",
+        "难过的",
+        "饿的",
+        "累的"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_feelings.png"
+    },
+    {
+      "id": 48,
+      "type": "single",
+      "subject": "英语",
+      "unit": "问候语",
+      "q": "早上见面常说？",
+      "a": "Good morning",
+      "choices": [
+        "Good night",
+        "Good morning",
+        "Goodbye",
+        "Thank you"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 49,
+      "type": "single",
+      "subject": "英语",
+      "unit": "问候语",
+      "q": "再见可以说？",
+      "a": "Goodbye",
+      "choices": [
+        "Hello",
+        "Hi",
+        "Goodbye",
+        "Please"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 50,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "pencil 是什么？",
+      "a": "铅笔",
+      "choices": [
+        "书包",
+        "铅笔",
+        "橡皮",
+        "尺子"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_school.png"
+    },
+    {
+      "id": 51,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "bag 是什么？",
+      "a": "书包",
+      "choices": [
+        "书",
+        "书包",
+        "铅笔",
+        "橡皮"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_school.png"
+    },
+    {
+      "id": 52,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "book 是什么？",
+      "a": "书",
+      "choices": [
+        "书",
+        "尺子",
+        "橡皮",
+        "书包"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_school.png"
+    },
+    {
+      "id": 53,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit4 能力",
+      "q": "I can sing. 意思是？",
+      "a": "我会唱歌",
+      "choices": [
+        "我会跑",
+        "我会唱歌",
+        "我会跳",
+        "我喜欢猫"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 54,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit5 动物",
+      "q": "cat 是什么动物？",
+      "a": "猫",
+      "choices": [
+        "狗",
+        "猫",
+        "鸟",
+        "鱼"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_animals.png"
+    },
+    {
+      "id": 55,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit5 动物",
+      "q": "dog 是什么动物？",
+      "a": "狗",
+      "choices": [
+        "猫",
+        "狗",
+        "猪",
+        "鸭"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_animals.png"
+    },
+    {
+      "id": 56,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "red 是什么颜色？",
+      "a": "红色",
+      "choices": [
+        "蓝色",
+        "绿色",
+        "红色",
+        "黄色"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_colors.png"
+    },
+    {
+      "id": 57,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "blue 是什么颜色？",
+      "a": "蓝色",
+      "choices": [
+        "红色",
+        "蓝色",
+        "黄色",
+        "绿色"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_colors.png"
+    },
+    {
+      "id": 58,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "yellow 是什么颜色？",
+      "a": "黄色",
+      "choices": [
+        "绿色",
+        "蓝色",
+        "黄色",
+        "黑色"
+      ],
+      "difficulty": 1,
+      "image": "assets/images/en_colors.png"
+    },
+    {
+      "id": 59,
+      "type": "single",
+      "subject": "英语",
+      "unit": "数字启蒙",
+      "q": "one, two, three 里 three 是？",
+      "a": "3",
+      "choices": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 60,
+      "type": "single",
+      "subject": "英语",
+      "unit": "礼貌用语",
+      "q": "别人给你东西，你说？",
+      "a": "Thank you",
+      "choices": [
+        "Hello",
+        "Sorry",
+        "Thank you",
+        "Bye"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 61,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·声母",
+      "q": "下面哪个是声母？",
+      "a": "b",
+      "choices": [
+        "b",
+        "a",
+        "o",
+        "ü"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 62,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·声母",
+      "q": "“猫”的声母是？",
+      "a": "m",
+      "choices": [
+        "m",
+        "a",
+        "o",
+        "n"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 63,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·韵母",
+      "q": "下面哪个是单韵母？",
+      "a": "a",
+      "choices": [
+        "a",
+        "b",
+        "p",
+        "m"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 64,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·韵母",
+      "q": "“鸡”的韵母是？",
+      "a": "i",
+      "choices": [
+        "i",
+        "j",
+        "q",
+        "x"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 65,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·声调",
+      "q": "第一声的调号是？",
+      "a": "ˉ",
+      "choices": [
+        "ˉ",
+        "ˊ",
+        "ˇ",
+        "ˋ"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 66,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·声调",
+      "q": "“妈”一般读第几声？",
+      "a": "第一声",
+      "choices": [
+        "第一声",
+        "第二声",
+        "第三声",
+        "第四声"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 67,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·整体认读",
+      "q": "下面哪个是整体认读音节？",
+      "a": "zhi",
+      "choices": [
+        "zhi",
+        "zh",
+        "i",
+        "zi"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 68,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·复韵母",
+      "q": "“开”的韵母是？",
+      "a": "ai",
+      "choices": [
+        "ai",
+        "ao",
+        "ou",
+        "an"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 69,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·鼻韵母",
+      "q": "“山”的韵母是？",
+      "a": "an",
+      "choices": [
+        "an",
+        "ang",
+        "en",
+        "eng"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 70,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册拼音·拼读",
+      "q": "b-a 拼读是？",
+      "a": "ba",
+      "choices": [
+        "ba",
+        "pa",
+        "ma",
+        "fa"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 71,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·天地人",
+      "q": "“天”和“人”合起来常说？",
+      "a": "天地人",
+      "choices": [
+        "天地人",
+        "金木水",
+        "口耳目",
+        "日月明"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 72,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·金木水火土",
+      "q": "下面哪个字和水有关？",
+      "a": "水",
+      "choices": [
+        "水",
+        "金",
+        "火",
+        "土"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 73,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·口耳目",
+      "q": "我们用什么看东西？",
+      "a": "目",
+      "choices": [
+        "目",
+        "口",
+        "耳",
+        "手"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 74,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·口耳目",
+      "q": "我们用什么听声音？",
+      "a": "耳",
+      "choices": [
+        "耳",
+        "目",
+        "口",
+        "足"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 75,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·日月明",
+      "q": "“日”和“月”合在一起是？",
+      "a": "明",
+      "choices": [
+        "明",
+        "朋",
+        "晶",
+        "萌"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 76,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·对韵歌",
+      "q": "“云对？”下一字常是？",
+      "a": "雨",
+      "choices": [
+        "雨",
+        "风",
+        "雪",
+        "雾"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 77,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·小书包",
+      "q": "书包里常见哪种文具？",
+      "a": "铅笔",
+      "choices": [
+        "铅笔",
+        "西瓜",
+        "足球",
+        "枕头"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 78,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册识字·升国旗",
+      "q": "升国旗时我们要？",
+      "a": "立正敬礼",
+      "choices": [
+        "立正敬礼",
+        "大声跑跳",
+        "吃零食",
+        "玩游戏"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 79,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·秋天",
+      "q": "秋天常见哪种颜色的叶子？",
+      "a": "黄色",
+      "choices": [
+        "黄色",
+        "蓝色",
+        "紫色",
+        "黑色"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 80,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·江南",
+      "q": "江南水乡常见什么植物？",
+      "a": "莲",
+      "choices": [
+        "莲",
+        "松",
+        "竹笋汤圆",
+        "仙人掌"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 81,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·雪地里的小画家",
+      "q": "雪地里小动物脚印像在？",
+      "a": "画画",
+      "choices": [
+        "画画",
+        "唱歌",
+        "游泳",
+        "煮饭"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 82,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·四季",
+      "q": "春天树木常常？",
+      "a": "发芽",
+      "choices": [
+        "发芽",
+        "落叶全无",
+        "结冰",
+        "下大雪"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 83,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·小小的船",
+      "q": "弯弯的月亮像什么？",
+      "a": "小船",
+      "choices": [
+        "小船",
+        "皮球",
+        "桌子",
+        "汽车"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 84,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·影子",
+      "q": "影子常常在什么时候出现？",
+      "a": "有光的时候",
+      "choices": [
+        "有光的时候",
+        "完全漆黑",
+        "睡着以后",
+        "下雨才会"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 85,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·比尾巴",
+      "q": "谁的尾巴长？常说？",
+      "a": "猴子",
+      "choices": [
+        "猴子",
+        "兔子",
+        "鸭子",
+        "松鼠"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 86,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·乌鸦喝水",
+      "q": "瓶子水位太低时乌鸦可以？",
+      "a": "放石子抬高水面",
+      "choices": [
+        "放石子抬高水面",
+        "打碎瓶子",
+        "扔掉水瓶",
+        "去睡觉"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 87,
+      "type": "single",
+      "subject": "语文",
+      "unit": "上册课文·雨点儿",
+      "q": "小雨点儿落到哪里可以帮忙？",
+      "a": "花和草",
+      "choices": [
+        "花和草",
+        "月亮",
+        "星星",
+        "书包"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 88,
+      "type": "single",
+      "subject": "语文",
+      "unit": "综合·笔画",
+      "q": "“一”有几画？",
+      "a": "1",
+      "choices": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 89,
+      "type": "single",
+      "subject": "语文",
+      "unit": "综合·反义词",
+      "q": "“大”的反义词是？",
+      "a": "小",
+      "choices": [
+        "小",
+        "多",
+        "高",
+        "长"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 90,
+      "type": "single",
+      "subject": "语文",
+      "unit": "综合·反义词",
+      "q": "“上”的反义词是？",
+      "a": "下",
+      "choices": [
+        "下",
+        "左",
+        "前",
+        "里"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 91,
+      "type": "single",
+      "subject": "语文",
+      "unit": "综合·量词",
+      "q": "一只（　）",
+      "a": "小鸟",
+      "choices": [
+        "小鸟",
+        "花",
+        "书本堆",
+        "水"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 92,
+      "type": "single",
+      "subject": "语文",
+      "unit": "下册预习·春夏秋冬",
+      "q": "冬天天气常常？",
+      "a": "冷",
+      "choices": [
+        "冷",
+        "很热",
+        "开花",
+        "游泳最合适"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 93,
+      "type": "single",
+      "subject": "语文",
+      "unit": "下册预习·姓氏歌",
+      "q": "问问爸爸妈妈：我们家的姓是？",
+      "a": "自己家里的姓",
+      "choices": [
+        "自己家里的姓",
+        "一定是李",
+        "一定是王",
+        "没有姓"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 94,
+      "type": "single",
+      "subject": "语文",
+      "unit": "下册预习·小青蛙",
+      "q": "青蛙喜欢生活在？",
+      "a": "水边",
+      "choices": [
+        "水边",
+        "沙漠",
+        "冰箱",
+        "书桌"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 95,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·生活中的数",
+      "q": "从 1 数到 5，中间缺哪个？1、2、□、4、5",
+      "a": "3",
+      "choices": [
+        "3",
+        "6",
+        "0",
+        "7"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 96,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·生活中的数",
+      "q": "5 后面是几？",
+      "a": "6",
+      "choices": [
+        "6",
+        "4",
+        "7",
+        "3"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 97,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·比大小",
+      "q": "7 ○ 5，○里填？",
+      "a": ">",
+      "choices": [
+        ">",
+        "<",
+        "=",
+        "÷"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 98,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·比大小",
+      "q": "3 和 3 比，结果是？",
+      "a": "一样大",
+      "choices": [
+        "一样大",
+        "左边大",
+        "右边大",
+        "不能比"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 99,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·分与合",
+      "q": "4 可以分成 1 和？",
+      "a": "3",
+      "choices": [
+        "3",
+        "2",
+        "4",
+        "5"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 100,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·分与合",
+      "q": "8 可以分成 3 和？",
+      "a": "5",
+      "choices": [
+        "5",
+        "4",
+        "6",
+        "2"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 101,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·5以内加减",
+      "q": "2 + 2 = ？",
+      "a": "4",
+      "choices": [
+        "4",
+        "3",
+        "5",
+        "2"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 102,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·5以内加减",
+      "q": "4 - 3 = ？",
+      "a": "1",
+      "choices": [
+        "1",
+        "2",
+        "0",
+        "4"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 103,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "7 + 2 = ？",
+      "a": "9",
+      "choices": [
+        "9",
+        "8",
+        "10",
+        "7"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 104,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "10 - 6 = ？",
+      "a": "4",
+      "choices": [
+        "4",
+        "5",
+        "3",
+        "6"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 105,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·6～10加减",
+      "q": "6 + 4 = ？",
+      "a": "10",
+      "choices": [
+        "10",
+        "9",
+        "11",
+        "8"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 106,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "1 + 2 + 3 = ？",
+      "a": "6",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "4"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 107,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "9 - 2 - 3 = ？",
+      "a": "4",
+      "choices": [
+        "4",
+        "5",
+        "3",
+        "6"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 108,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·加减混合",
+      "q": "5 + 3 - 2 = ？",
+      "a": "6",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "4"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 109,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·加减混合",
+      "q": "8 - 3 + 1 = ？",
+      "a": "6",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "4"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 110,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "15 里面有几个十和几个一？",
+      "a": "1个十和5个一",
+      "choices": [
+        "1个十和5个一",
+        "5个十和1个一",
+        "15个十",
+        "0个十"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 111,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "12 比 10 多几？",
+      "a": "2",
+      "choices": [
+        "2",
+        "1",
+        "3",
+        "12"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 112,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·11～20",
+      "q": "从 11 数到 14，一共数了几个数？（含11和14）",
+      "a": "4",
+      "choices": [
+        "4",
+        "3",
+        "5",
+        "2"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 113,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·20以内进位加法",
+      "q": "9 + 3 = ？",
+      "a": "12",
+      "choices": [
+        "12",
+        "11",
+        "13",
+        "10"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 114,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·20以内进位加法",
+      "q": "8 + 7 = ？",
+      "a": "15",
+      "choices": [
+        "15",
+        "14",
+        "16",
+        "13"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 115,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·20以内进位加法",
+      "q": "6 + 5 = ？",
+      "a": "11",
+      "choices": [
+        "11",
+        "10",
+        "12",
+        "9"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 116,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·认识图形",
+      "q": "皮球看起来像哪种立体图形？",
+      "a": "球",
+      "choices": [
+        "球",
+        "正方体",
+        "长方体",
+        "圆柱"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 117,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·认识图形",
+      "q": "魔方最像？",
+      "a": "正方体",
+      "choices": [
+        "正方体",
+        "球",
+        "圆柱",
+        "圆锥"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 118,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·认识图形",
+      "q": "易拉罐侧身最像？",
+      "a": "圆柱",
+      "choices": [
+        "圆柱",
+        "球",
+        "正方体",
+        "三角形"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 119,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·分类",
+      "q": "把红苹果和青苹果分开，是按什么分？",
+      "a": "颜色",
+      "choices": [
+        "颜色",
+        "大小",
+        "味道一定",
+        "声音"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 120,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·位置",
+      "q": "小明在小红左边，小红在小明的？",
+      "a": "右边",
+      "choices": [
+        "右边",
+        "左边",
+        "上边",
+        "下边"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 121,
+      "type": "single",
+      "subject": "数学",
+      "unit": "下册预习·100以内",
+      "q": "几十里面没有“7”的是？",
+      "a": "50",
+      "choices": [
+        "50",
+        "70",
+        "17",
+        "71"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 122,
+      "type": "single",
+      "subject": "数学",
+      "unit": "下册预习·平面图形",
+      "q": "哪一个是三角形？",
+      "a": "有3条边的图形",
+      "choices": [
+        "有3条边的图形",
+        "圆",
+        "正方形",
+        "只有1条边"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 123,
+      "type": "single",
+      "subject": "数学",
+      "unit": "下册预习·平面图形",
+      "q": "正方形有几条边？",
+      "a": "4",
+      "choices": [
+        "4",
+        "3",
+        "5",
+        "2"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 124,
+      "type": "single",
+      "subject": "数学",
+      "unit": "综合·解决问题",
+      "q": "树上有 3 只鸟，又飞来 2 只，一共几只？",
+      "a": "5",
+      "choices": [
+        "5",
+        "4",
+        "6",
+        "3"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 125,
+      "type": "single",
+      "subject": "数学",
+      "unit": "综合·解决问题",
+      "q": "有 10 支铅笔，用掉 4 支，还剩几支？",
+      "a": "6",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "4"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 126,
+      "type": "single",
+      "subject": "英语",
+      "unit": "字母启蒙",
+      "q": "字母 A 的小写是？",
+      "a": "a",
+      "choices": [
+        "a",
+        "b",
+        "d",
+        "e"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 127,
+      "type": "single",
+      "subject": "英语",
+      "unit": "字母启蒙",
+      "q": "字母 B 读音接近？",
+      "a": "/biː/",
+      "choices": [
+        "/biː/",
+        "/siː/",
+        "/diː/",
+        "/ef/"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 128,
+      "type": "single",
+      "subject": "英语",
+      "unit": "字母启蒙",
+      "q": "哪一个是元音字母？",
+      "a": "a",
+      "choices": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "difficulty": 2
+    },
+    {
+      "id": 129,
+      "type": "single",
+      "subject": "英语",
+      "unit": "问候语",
+      "q": "早上见面常说？",
+      "a": "Good morning",
+      "choices": [
+        "Good morning",
+        "Good night",
+        "Goodbye",
+        "Thank you"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 130,
+      "type": "single",
+      "subject": "英语",
+      "unit": "问候语",
+      "q": "How are you? 礼貌回答可以是？",
+      "a": "I am fine",
+      "choices": [
+        "I am fine",
+        "I am book",
+        "I am red",
+        "I am cat"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 131,
+      "type": "single",
+      "subject": "英语",
+      "unit": "礼貌用语",
+      "q": "得到帮助后说？",
+      "a": "Thank you",
+      "choices": [
+        "Thank you",
+        "Sorry",
+        "Hello",
+        "Bye"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 132,
+      "type": "single",
+      "subject": "英语",
+      "unit": "礼貌用语",
+      "q": "挡住别人路时说？",
+      "a": "Excuse me",
+      "choices": [
+        "Excuse me",
+        "Goodbye",
+        "Color",
+        "Animal"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 133,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "father 是？",
+      "a": "爸爸",
+      "choices": [
+        "爸爸",
+        "妈妈",
+        "哥哥",
+        "妹妹"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 134,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "mother 是？",
+      "a": "妈妈",
+      "choices": [
+        "妈妈",
+        "爸爸",
+        "老师",
+        "同学"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 135,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit1 家庭",
+      "q": "This is my _____.（指着姐姐）",
+      "a": "sister",
+      "choices": [
+        "sister",
+        "father",
+        "book",
+        "pen"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 136,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit2 情绪",
+      "q": "happy 的意思接近？",
+      "a": "开心",
+      "choices": [
+        "开心",
+        "生气",
+        "害怕",
+        "困"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 137,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit2 情绪",
+      "q": "sad 的意思接近？",
+      "a": "难过",
+      "choices": [
+        "难过",
+        "高兴",
+        "饿",
+        "快"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 138,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "pencil 是？",
+      "a": "铅笔",
+      "choices": [
+        "铅笔",
+        "书包",
+        "橡皮",
+        "尺子"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 139,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "ruler 是？",
+      "a": "尺子",
+      "choices": [
+        "尺子",
+        "钢笔",
+        "书",
+        "桌"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 140,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit3 文具",
+      "q": "book 是？",
+      "a": "书",
+      "choices": [
+        "书",
+        "笔",
+        "橡皮",
+        "椅子"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 141,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit4 能力",
+      "q": "I can _____.（会跑）",
+      "a": "run",
+      "choices": [
+        "run",
+        "book",
+        "red",
+        "mum"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 142,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit4 能力",
+      "q": "I can jump. 意思是？",
+      "a": "我会跳",
+      "choices": [
+        "我会跳",
+        "我会吃",
+        "我会睡",
+        "我是书"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 143,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit5 动物",
+      "q": "cat 是？",
+      "a": "猫",
+      "choices": [
+        "猫",
+        "狗",
+        "鸟",
+        "鱼"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 144,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit5 动物",
+      "q": "dog 是？",
+      "a": "狗",
+      "choices": [
+        "狗",
+        "猫",
+        "猪",
+        "鸭"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 145,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit5 动物",
+      "q": "bird 是？",
+      "a": "鸟",
+      "choices": [
+        "鸟",
+        "鱼",
+        "马",
+        "牛"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 146,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "red 是？",
+      "a": "红色",
+      "choices": [
+        "红色",
+        "蓝色",
+        "绿色",
+        "黄色"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 147,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "blue 是？",
+      "a": "蓝色",
+      "choices": [
+        "蓝色",
+        "红色",
+        "黑色",
+        "白色"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 148,
+      "type": "single",
+      "subject": "英语",
+      "unit": "Unit6 颜色",
+      "q": "yellow 是？",
+      "a": "黄色",
+      "choices": [
+        "黄色",
+        "绿色",
+        "紫色",
+        "灰色"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 149,
+      "type": "single",
+      "subject": "英语",
+      "unit": "数字启蒙",
+      "q": "one 是？",
+      "a": "1",
+      "choices": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 150,
+      "type": "single",
+      "subject": "英语",
+      "unit": "数字启蒙",
+      "q": "two 是？",
+      "a": "2",
+      "choices": [
+        "2",
+        "1",
+        "3",
+        "5"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 151,
+      "type": "single",
+      "subject": "英语",
+      "unit": "数字启蒙",
+      "q": "three 是？",
+      "a": "3",
+      "choices": [
+        "3",
+        "2",
+        "4",
+        "1"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 152,
+      "type": "single",
+      "subject": "英语",
+      "unit": "数字启蒙",
+      "q": "five 是？",
+      "a": "5",
+      "choices": [
+        "5",
+        "4",
+        "6",
+        "3"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 153,
+      "type": "single",
+      "subject": "英语",
+      "unit": "综合·学校",
+      "q": "school 是？",
+      "a": "学校",
+      "choices": [
+        "学校",
+        "医院",
+        "公园",
+        "商店"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 154,
+      "type": "single",
+      "subject": "英语",
+      "unit": "综合·身体",
+      "q": "hand 是？",
+      "a": "手",
+      "choices": [
+        "手",
+        "脚",
+        "头",
+        "眼睛"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 155,
+      "type": "single",
+      "subject": "英语",
+      "unit": "下册预习·食物",
+      "q": "apple 是？",
+      "a": "苹果",
+      "choices": [
+        "苹果",
+        "香蕉",
+        "米饭",
+        "牛奶"
+      ],
+      "difficulty": 1
+    },
+    {
+      "id": 156,
+      "type": "single",
+      "subject": "英语",
+      "unit": "下册预习·天气",
+      "q": "It is sunny. 接近？",
+      "a": "晴天",
+      "choices": [
+        "晴天",
+        "下雨",
+        "下雪",
+        "很黑"
+      ],
+      "difficulty": 1
+    }
+  ]
+}

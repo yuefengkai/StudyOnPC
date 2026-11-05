@@ -1,0 +1,37 @@
+{
+  "name": "开放格式示例（StudyOnTV-like 字段，非其源码）",
+  "version": 1,
+  "questions": [
+    {
+      "type": "single",
+      "q": "中国的首都是？",
+      "answers": ["上海", "北京", "广州", "深圳"],
+      "correctIndices": [1],
+      "difficulty": 1,
+      "subject": "常识"
+    },
+    {
+      "type": "boolean",
+      "q": "一年有四季",
+      "correct": true,
+      "difficulty": 1,
+      "subject": "常识"
+    },
+    {
+      "type": "multiple",
+      "q": "下列哪些是水果？",
+      "answers": ["苹果", "汽车", "香蕉", "石头"],
+      "correctIndices": [0, 2],
+      "difficulty": 2,
+      "subject": "常识"
+    },
+    {
+      "type": "text",
+      "q": "写出一个偶数（含关键词即可）",
+      "k": ["2"],
+      "a": "2",
+      "difficulty": 1,
+      "subject": "数学"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "parent_pin": "changeme",
+  "admin_password": "changeme",
+  "unlock_minutes_per_set": 10,
+  "questions_per_set": 3,
+  "pass_ratio": 0.6667,
+  "daily_max_watch_minutes": 60,
+  "wrong_streak_to_extra": 3,
+  "extra_questions": 1,
+  "poll_ms": 2500,
+  "admin_port": 8099,
+  "admin_bind": "0.0.0.0",
+  "youtube_keywords": [
+    "youtube",
+    "youtu.be"
+  ],
+  "bank_file": "data/banks/grade1-shenzhen.json",
+  "task_name": "StudyOnPC",
+  "note": "示例配置：复制本文件为 config.json 后务必修改 parent_pin 与 admin_password。本软件为原创，仅借鉴 StudyOnTV 的家庭使用思路。",
+  "answer_delay_seconds": 5
+}

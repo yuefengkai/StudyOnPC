@@ -1,0 +1,38 @@
+# Runtime / local
+logs/
+*.log
+data/state.json
+*.pid
+stop.flag
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# PyInstaller / packaging
+build/
+dist/
+*.spec.bak
+StudyOnPC-dist/
+*.exe
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+*.bak
+
+# Local secrets (commit config.example.json only; copy to config.json locally)
+config.json
+config.local.json
