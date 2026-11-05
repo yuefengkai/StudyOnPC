@@ -2,7 +2,6 @@
 """Unlock-balance / daily-cap / quiz-set rules (platform-agnostic)."""
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -29,37 +28,80 @@ class RulesConfig:
             answer_delay_seconds=max(0.0, float(d.get("answer_delay_seconds", 5))),
         )
 
+    @classmethod
+    def from_site(cls, site: dict[str, Any], global_cfg: dict[str, Any] | None = None) -> "RulesConfig":
+        """Build rules for the active site, inheriting global streak/delay settings."""
+        g = global_cfg or {}
+        return cls(
+            unlock_minutes_per_set=float(site.get("unlock_minutes_per_set", g.get("unlock_minutes_per_set", 10))),
+            questions_per_set=max(1, int(site.get("questions_per_set", g.get("questions_per_set", 3)))),
+            pass_ratio=float(site.get("pass_ratio", g.get("pass_ratio", 0.6667))),
+            daily_max_watch_minutes=float(site.get("daily_max_minutes", g.get("daily_max_watch_minutes", 60))),
+            wrong_streak_to_extra=max(1, int(g.get("wrong_streak_to_extra", 3))),
+            extra_questions=max(0, int(g.get("extra_questions", 1))),
+            answer_delay_seconds=max(0.0, float(g.get("answer_delay_seconds", 5))),
+        )
 
-def remaining_daily(st: dict[str, Any], cfg: RulesConfig) -> float:
-    used = float(st.get("daily_used_minutes", 0.0))
+
+def _site_used_map(st: dict[str, Any]) -> dict[str, float]:
+    raw = st.get("site_daily_used") or {}
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, float] = {}
+    for k, v in raw.items():
+        try:
+            out[str(k)] = float(v)
+        except Exception:
+            continue
+    return out
+
+
+def site_daily_used(st: dict[str, Any], site_id: str) -> float:
+    return float(_site_used_map(st).get(site_id, 0.0))
+
+
+def remaining_daily(st: dict[str, Any], cfg: RulesConfig, site_id: str | None = None) -> float:
+    if site_id:
+        used = site_daily_used(st, site_id)
+    else:
+        used = float(st.get("daily_used_minutes", 0.0))
     return max(0.0, cfg.daily_max_watch_minutes - used)
 
 
-def can_watch(st: dict[str, Any], cfg: RulesConfig) -> bool:
+def can_watch(st: dict[str, Any], cfg: RulesConfig, site_id: str | None = None) -> bool:
     bal = float(st.get("balance_minutes", 0.0))
-    return bal > 0.0 and remaining_daily(st, cfg) > 0.0
+    return bal > 0.0 and remaining_daily(st, cfg, site_id) > 0.0
 
 
-def needs_quiz(st: dict[str, Any], cfg: RulesConfig) -> bool:
-    """True when kid cannot consume more watch time."""
+def needs_quiz(st: dict[str, Any], cfg: RulesConfig, site_id: str | None = None) -> bool:
+    """True when shared balance is empty OR this site's daily max is hit."""
     if float(st.get("balance_minutes", 0.0)) <= 0.0:
         return True
-    if remaining_daily(st, cfg) <= 0.0:
+    if remaining_daily(st, cfg, site_id) <= 0.0:
         return True
     return False
 
 
-def consume_watch(st: dict[str, Any], cfg: RulesConfig, dt_minutes: float) -> float:
-    """Consume up to dt_minutes from balance (and daily). Returns minutes actually consumed."""
+def consume_watch(
+    st: dict[str, Any],
+    cfg: RulesConfig,
+    dt_minutes: float,
+    site_id: str | None = None,
+) -> float:
+    """Consume from shared balance; track per-site daily used when site_id given."""
     if dt_minutes <= 0:
         return 0.0
-    if not can_watch(st, cfg):
+    if not can_watch(st, cfg, site_id):
         return 0.0
     bal = float(st.get("balance_minutes", 0.0))
-    rem = remaining_daily(st, cfg)
+    rem = remaining_daily(st, cfg, site_id)
     take = min(dt_minutes, bal, rem)
     st["balance_minutes"] = bal - take
     st["daily_used_minutes"] = float(st.get("daily_used_minutes", 0.0)) + take
+    if site_id:
+        used_map = _site_used_map(st)
+        used_map[site_id] = float(used_map.get(site_id, 0.0)) + take
+        st["site_daily_used"] = used_map
     return take
 
 
@@ -70,12 +112,6 @@ def set_size(st: dict[str, Any], cfg: RulesConfig) -> int:
 
 
 def required_correct(n_questions: int, cfg: RulesConfig) -> int:
-    """Minimum correct answers to pass a set of n questions.
-
-    Finds the smallest k such that k/n >= pass_ratio (float-tolerant).
-    Default pass_ratio≈2/3 → 2 of 3. Note: literal 0.67 is slightly above 2/3,
-    so config default uses 0.6667.
-    """
     if n_questions <= 0:
         return 0
     ratio = float(cfg.pass_ratio)
@@ -83,7 +119,6 @@ def required_correct(n_questions: int, cfg: RulesConfig) -> int:
         return 0
     if ratio >= 1:
         return n_questions
-    # 0.005 slack so config 0.67 / 0.6667 both mean "2 of 3"
     for k in range(0, n_questions + 1):
         if (k / n_questions) + 0.005 >= ratio:
             return max(1, k)
@@ -97,7 +132,6 @@ def passed_set(correct: int, n_questions: int, cfg: RulesConfig) -> bool:
 
 
 def record_answer(st: dict[str, Any], cfg: RulesConfig, correct: bool) -> None:
-    """Update wrong streak / pending make-up after one question."""
     if correct:
         st["wrong_streak"] = 0
         return
@@ -108,20 +142,10 @@ def record_answer(st: dict[str, Any], cfg: RulesConfig, correct: bool) -> None:
         st["wrong_streak"] = 0
 
 
-def grant_unlock(st: dict[str, Any], cfg: RulesConfig) -> float:
-    """On passed set: clear make-up, add unlock minutes capped by remaining daily room
-    (balance may exceed remaining so kid can sit with leftover after daily resets tomorrow —
-    but we cap the *grant* by remaining daily so they cannot bank past today's cap via quizzes).
-
-    Spec: "add unlock_minutes (capped by remaining daily max)".
-    Interpret remaining as: how many more watch minutes are allowed today.
-    Grant min(unlock, remaining_daily) so quiz cannot push usable-today beyond the cap.
-    Balance itself stores granted minutes; consume still respects daily cap.
-    """
-    rem = remaining_daily(st, cfg)
+def grant_unlock(st: dict[str, Any], cfg: RulesConfig, site_id: str | None = None) -> float:
+    """Credit shared balance using active site's unlock, capped by that site's remaining daily."""
+    rem = remaining_daily(st, cfg, site_id)
     grant = min(float(cfg.unlock_minutes_per_set), rem)
-    # If rem is 0 (daily cap hit), grant 0 — kid already can't watch; still clear make-up
-    # so they don't accumulate infinite extras overnight. Balance stays as-is.
     st["balance_minutes"] = float(st.get("balance_minutes", 0.0)) + grant
     st["today_unlock_minutes"] = float(st.get("today_unlock_minutes", 0.0)) + grant
     st["pending_extra"] = 0
@@ -129,10 +153,40 @@ def grant_unlock(st: dict[str, Any], cfg: RulesConfig) -> float:
     return grant
 
 
-def status_snapshot(st: dict[str, Any], cfg: RulesConfig) -> dict[str, Any]:
+def add_bonus_minutes(st: dict[str, Any], minutes: float) -> float:
+    """Parent '今日加时' — adds to shared balance (not capped by site daily)."""
+    m = max(0.0, float(minutes))
+    st["balance_minutes"] = float(st.get("balance_minutes", 0.0)) + m
+    return m
+
+
+def status_snapshot(
+    st: dict[str, Any],
+    cfg: RulesConfig,
+    *,
+    sites: list[dict[str, Any]] | None = None,
+    active_site_id: str | None = None,
+) -> dict[str, Any]:
     bal = float(st.get("balance_minutes", 0.0))
     used = float(st.get("daily_used_minutes", 0.0))
-    rem = remaining_daily(st, cfg)
+    rem = remaining_daily(st, cfg, active_site_id)
+    site_used = _site_used_map(st)
+    site_rows = []
+    for s in sites or []:
+        sid = str(s.get("id") or "")
+        smax = float(s.get("daily_max_minutes", cfg.daily_max_watch_minutes))
+        su = float(site_used.get(sid, 0.0))
+        site_rows.append(
+            {
+                "id": sid,
+                "name": s.get("name") or sid,
+                "enabled": bool(s.get("enabled", True)),
+                "daily_used_minutes": round(su, 2),
+                "daily_max_minutes": smax,
+                "daily_remaining_minutes": round(max(0.0, smax - su), 2),
+                "keywords": list(s.get("keywords") or []),
+            }
+        )
     return {
         "balance_minutes": round(bal, 2),
         "daily_used_minutes": round(used, 2),
@@ -141,12 +195,15 @@ def status_snapshot(st: dict[str, Any], cfg: RulesConfig) -> dict[str, Any]:
         "daily_date": st.get("daily_date", ""),
         "pending_extra": int(st.get("pending_extra", 0)),
         "wrong_streak": int(st.get("wrong_streak", 0)),
-        "needs_quiz": needs_quiz(st, cfg),
-        "can_watch": can_watch(st, cfg),
+        "needs_quiz": needs_quiz(st, cfg, active_site_id),
+        "can_watch": can_watch(st, cfg, active_site_id),
         "quiz_active": bool(st.get("quiz_active", False)),
         "questions_per_set": set_size(st, cfg),
         "unlock_minutes_per_set": cfg.unlock_minutes_per_set,
         "pass_ratio": cfg.pass_ratio,
         "today_unlock_minutes": round(float(st.get("today_unlock_minutes", 0.0)), 2),
         "running_since": st.get("running_since", ""),
+        "active_site_id": active_site_id or "",
+        "sites": site_rows,
+        "site_daily_used": {k: round(v, 2) for k, v in site_used.items()},
     }

@@ -19,17 +19,18 @@ from .paths import ANSWER_LOG
 
 log = logging.getLogger("studyonpc.quiz_ui")
 
-# Pastel theme
-BG = "#FFF5EB"          # warm cream
+# Kid-flashy pastel theme (readable + playful)
+BG = "#FFF0F5"          # lavender blush
 CARD_BG = "#FFFFFF"
-CARD_BORDER = "#FFCC80"
+CARD_BORDER = "#FF80AB"
 HEADER_FALLBACK = "#FFD54F"
-FOOTER_FG = "#8D6E63"
+FOOTER_FG = "#6A1B9A"
+STICKERS = ("🌟", "🎈", "🦄", "🍭", "🚀", "🌈", "🐱", "🎯")
 
 SUBJECT_THEME = {
-    "数学": {"header": "#FFAB91", "accent": "#FF7043", "btn": "#FFE0B2", "btn_h": "#FFCC80", "btn_p": "#FFB74D", "emoji": "🔢"},
-    "语文": {"header": "#81D4FA", "accent": "#29B6F6", "btn": "#E1F5FE", "btn_h": "#B3E5FC", "btn_p": "#81D4FA", "emoji": "📖"},
-    "英语": {"header": "#A5D6A7", "accent": "#66BB6A", "btn": "#E8F5E9", "btn_h": "#C8E6C9", "btn_p": "#A5D6A7", "emoji": "🔤"},
+    "数学": {"header": "#FF8A65", "accent": "#FF3D00", "btn": "#FFE082", "btn_h": "#FFD54F", "btn_p": "#FFCA28", "emoji": "🔢", "sticker": "🧮"},
+    "语文": {"header": "#4FC3F7", "accent": "#0277BD", "btn": "#B2EBF2", "btn_h": "#80DEEA", "btn_p": "#4DD0E1", "emoji": "📖", "sticker": "✏️"},
+    "英语": {"header": "#81C784", "accent": "#2E7D32", "btn": "#C5E1A5", "btn_h": "#AED581", "btn_p": "#9CCC65", "emoji": "🔤", "sticker": "🐾"},
 }
 
 try:
@@ -65,6 +66,8 @@ class QuizSetRunner:
         parent_pin: str,
         on_finished: Callable[[bool, float], None],
         on_parent_quit: Callable[[], None],
+        site_id: str | None = None,
+        speak_fn: Callable[[str], None] | None = None,
     ):
         self.root = root
         self.questions = questions
@@ -73,6 +76,8 @@ class QuizSetRunner:
         self.parent_pin = parent_pin
         self.on_finished = on_finished
         self.on_parent_quit = on_parent_quit
+        self.site_id = site_id
+        self.speak_fn = speak_fn
         self.set_qs: list[dict[str, Any]] = []
         self.idx = 0
         self.correct_count = 0
@@ -99,6 +104,8 @@ class QuizSetRunner:
         self._img_lbl: tk.Label | None = None
         self._fb_lbl: tk.Label | None = None
         self._delay_lbl: tk.Label | None = None
+        self._speak_btn: tk.Button | None = None
+        self._sticker_lbl: tk.Label | None = None
         self._btn_frame: tk.Frame | None = None
         self._choice_btns: list = []
         self._multi_frame: tk.Frame | None = None
@@ -124,6 +131,27 @@ class QuizSetRunner:
         self.correct_count = 0
         log.info("quiz set start n=%d pending_extra=%s", n, self.state.get("pending_extra"))
         self._show_current()
+
+
+    def _on_speak(self) -> None:
+        if not self.speak_fn:
+            try:
+                messagebox.showinfo("听一听", "语音朗读未开启。请在管理页打开 TTS，并填写火山引擎 appid/token。", parent=self._win or self.root)
+            except Exception:
+                pass
+            return
+        q = self._active_q or (self.set_qs[self.idx] if self.set_qs and self.idx < len(self.set_qs) else None)
+        if not q:
+            return
+        parts = [str(q.get("q") or "")]
+        choices = q.get("choices") or []
+        if choices:
+            parts.append("选项：" + "，".join(str(c) for c in choices[:4]))
+        text = "。".join(p for p in parts if p)
+        try:
+            self.speak_fn(text)
+        except Exception as e:
+            log.warning("speak failed: %s", e)
 
     def _harden(self, win: tk.Toplevel) -> None:
         win.protocol("WM_DELETE_WINDOW", lambda: None)
@@ -197,11 +225,12 @@ class QuizSetRunner:
             subject,
             {
                 "header": HEADER_FALLBACK,
-                "accent": "#FFA726",
-                "btn": "#FFF3E0",
-                "btn_h": "#FFE0B2",
-                "btn_p": "#FFCC80",
+                "accent": "#FF4081",
+                "btn": "#F8BBD0",
+                "btn_h": "#F48FB1",
+                "btn_p": "#F06292",
                 "emoji": "⭐",
+                "sticker": "🌈",
             },
         )
 
@@ -276,12 +305,20 @@ class QuizSetRunner:
         top_row.pack(fill="x", padx=24, pady=(16, 4))
         self._title_lbl = tk.Label(
             top_row,
-            text="⭐ 先学再看",
+            text="🌈 先学再看 ✨",
             bg=HEADER_FALLBACK,
-            fg="#3E2723",
-            font=pyui.preferred_font(18, "bold"),
+            fg="#4A148C",
+            font=pyui.preferred_font(20, "bold"),
         )
         self._title_lbl.pack(side="left")
+        self._sticker_lbl = tk.Label(
+            top_row,
+            text=" " + " ".join(STICKERS[:4]),
+            bg=HEADER_FALLBACK,
+            fg="#6A1B9A",
+            font=pyui.preferred_font(14),
+        )
+        self._sticker_lbl.pack(side="left", padx=(12, 0))
         self._progress_lbl = tk.Label(
             top_row,
             text="第 1 / 1 题",
@@ -317,7 +354,7 @@ class QuizSetRunner:
         body_wrap.pack(expand=True, fill="both", padx=36, pady=18)
         shadow = tk.Frame(body_wrap, bg="#E8E0D5")
         shadow.pack(expand=True, fill="both")
-        border = tk.Frame(shadow, bg=CARD_BORDER, padx=4, pady=4)
+        border = tk.Frame(shadow, bg=CARD_BORDER, padx=6, pady=6)
         border.pack(fill="both", expand=True, padx=4, pady=4)
         body = tk.Frame(border, bg=CARD_BG)
         body.pack(fill="both", expand=True)
@@ -352,6 +389,25 @@ class QuizSetRunner:
         )
         self._delay_lbl.pack(pady=(4, 0))
 
+        speak_row = tk.Frame(body, bg=CARD_BG)
+        speak_row.pack(pady=(2, 4))
+        self._speak_btn = tk.Button(
+            speak_row,
+            text="🔊 听一听题目",
+            font=pyui.preferred_font(14, "bold"),
+            bg="#FFF59D",
+            fg="#E65100",
+            activebackground="#FFEE58",
+            activeforeground="#BF360C",
+            relief="raised",
+            bd=3,
+            padx=14,
+            pady=6,
+            cursor="hand2",
+            command=self._on_speak,
+        )
+        self._speak_btn.pack()
+
         # Fixed 2x2 option grid — widgets stay forever
         self._btn_frame = tk.Frame(body, bg=CARD_BG)
         self._btn_frame.pack(pady=16, anchor="center")
@@ -366,8 +422,8 @@ class QuizSetRunner:
                 bg_press="#FFCC80",
                 fg="#1A237E",
                 accent="#FFA726",
-                width=320,
-                height=104,
+                width=340,
+                height=112,
                 enabled=False,
             )
             # sticky="" — do not stretch cards; uniform columns keep positions fixed
@@ -375,10 +431,10 @@ class QuizSetRunner:
             self._choice_btns.append(b)
         # Equal column/row sizes so hover never redistributes width
         # Equal fixed columns — no weight so hover cannot redistribute width
-        self._btn_frame.grid_columnconfigure(0, weight=0, minsize=320, uniform="optcol")
-        self._btn_frame.grid_columnconfigure(1, weight=0, minsize=320, uniform="optcol")
-        self._btn_frame.grid_rowconfigure(0, weight=0, minsize=104, uniform="optrow")
-        self._btn_frame.grid_rowconfigure(1, weight=0, minsize=104, uniform="optrow")
+        self._btn_frame.grid_columnconfigure(0, weight=0, minsize=340, uniform="optcol")
+        self._btn_frame.grid_columnconfigure(1, weight=0, minsize=340, uniform="optcol")
+        self._btn_frame.grid_rowconfigure(0, weight=0, minsize=112, uniform="optrow")
+        self._btn_frame.grid_rowconfigure(1, weight=0, minsize=112, uniform="optrow")
 
         # Multiple-choice panel (hidden unless needed)
         self._multi_frame = tk.Frame(body, bg=CARD_BG)
@@ -450,8 +506,17 @@ class QuizSetRunner:
                     g.configure(bg=h)
                 except Exception:
                     pass
-        emoji = theme["emoji"]
-        self._title_lbl.configure(text=f"{emoji} 先学再看", bg=h)
+        emoji = theme.get("emoji") or "⭐"
+        sticker = theme.get("sticker") or "🌈"
+        self._title_lbl.configure(text=f"{emoji} 先学再看 ✨", bg=h, fg="#4A148C")
+        if self._sticker_lbl is not None:
+            try:
+                self._sticker_lbl.configure(
+                    text=f" {sticker} " + " ".join(STICKERS[:3]),
+                    bg=h,
+                )
+            except Exception:
+                pass
         self._progress_lbl.configure(bg=h)
         self._dots_frame.configure(bg=h)
         self._sub_host.configure(bg=h)
@@ -925,7 +990,7 @@ class QuizSetRunner:
         passed = rules_mod.passed_set(self.correct_count, n, self.rules)
         grant = 0.0
         if passed:
-            grant = rules_mod.grant_unlock(self.state, self.rules)
+            grant = rules_mod.grant_unlock(self.state, self.rules, self.site_id)
         log.info(
             "quiz set done correct=%d/%d passed=%s grant=%.1f",
             self.correct_count,

@@ -32,3 +32,11 @@ Windows 个人/家庭「先学再看」：盯 Chrome 前台 YouTube，用**解�
 ## MVP 不做
 
 间隔重复、星星奖励、主观题 AI 批改、YouTube 以外的整机应用锁、Android TV 端。
+
+
+## v1 增量
+
+- 多站点 `sites[]` + 共享余额 + 每站每日上限
+- 管理页编辑站点 / 今日加时 / 火山 TTS 开关
+- 答题页听一听（Volcengine openspeech）
+- 更童趣的答题 UI

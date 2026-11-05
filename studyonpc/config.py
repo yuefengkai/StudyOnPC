@@ -7,6 +7,8 @@ from copy import deepcopy
 from typing import Any
 
 from .paths import CONFIG_PATH, ensure_runtime_dirs
+from .sites import migrate_sites
+from .tts import DEFAULT_TTS, normalize_tts
 
 log = logging.getLogger("studyonpc.config")
 
@@ -23,6 +25,8 @@ DEFAULTS: dict[str, Any] = {
     "admin_port": 8099,
     "admin_bind": "0.0.0.0",
     "youtube_keywords": ["youtube", "youtu.be"],
+    "sites": [],
+    "tts": dict(DEFAULT_TTS),
     "bank_file": "data/banks/grade1-shenzhen.json",
     "task_name": "StudyOnPC",
     "answer_delay_seconds": 5,
@@ -40,9 +44,8 @@ def load_config() -> dict[str, Any]:
         log.warning("config missing, using defaults")
     except Exception as e:
         log.warning("config load failed: %s", e)
-    # keep keywords as list of lowercase strings
-    kws = cfg.get("youtube_keywords") or DEFAULTS["youtube_keywords"]
-    cfg["youtube_keywords"] = [str(k).lower() for k in kws]
+    migrate_sites(cfg)
+    normalize_tts(cfg)
     cfg["parent_pin"] = str(cfg.get("parent_pin", "changeme"))
     cfg["admin_password"] = str(cfg.get("admin_password") or cfg["parent_pin"])
     return cfg
@@ -50,6 +53,8 @@ def load_config() -> dict[str, Any]:
 
 def save_config(cfg: dict[str, Any]) -> None:
     ensure_runtime_dirs()
+    migrate_sites(cfg)
+    normalize_tts(cfg)
     CONFIG_PATH.write_text(
         json.dumps(cfg, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",

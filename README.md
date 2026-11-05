@@ -22,6 +22,20 @@
 
 *语文 · 口耳目手足（插图题）*
 
+## 多站点与语音（v1）
+
+- **多站点 `sites[]`**：共享解锁余额；每个站点独立关键词、每组解锁分钟、每日上限、题数与及格线。旧配置的 `youtube_keywords` 会自动迁移成一个 YouTube 站点。
+- **家长管理页** `/admin`：可编辑站点、规则、题库；「今日加时」直接增加共享余额；可开关火山引擎 TTS。
+- **答题页「听一听」**：调用火山 / 字节跳动 openspeech TTS（`appid` + `access_token` 只写在本地 `config.json`，示例见 `config.example.json`）。
+- 答题界面更童趣：更亮的配色、贴纸装饰、更大的选项按钮。
+
+填写火山密钥（本地）：
+
+1. 复制 `config.example.json` → `config.json`（或在管理页 TTS 区填写）
+2. 在 [火山引擎控制台](https://console.volcengine.com/) 开通语音合成，拿到 **appid** 与 **access_token**
+3. 设置 `tts.enabled=true`，`cluster` 一般用 `volcano_tts`，`voice_type` 如 `BV001_streaming`
+4. 保存后重新打开答题页，点「听一听题目」
+
 
 ## Windows 可执行文件（推荐）
 

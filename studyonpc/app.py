@@ -16,6 +16,8 @@ from . import rules as rules_mod
 from . import win_yt
 from .admin_server import AdminContext, start_admin_server
 from .config import load_config, save_config
+from .sites import default_site, enabled_sites, match_site, migrate_sites
+from . import tts as tts_mod
 from .paths import (
     ANSWER_LOG,
     FORCE_QUIZ_FLAG,
@@ -58,8 +60,11 @@ def setup_logging() -> None:
 class StudyApp:
     def __init__(self, cfg: dict, fire_once: bool = False):
         self.cfg = cfg
+        migrate_sites(self.cfg)
+        tts_mod.normalize_tts(self.cfg)
         self.rules = rules_mod.RulesConfig.from_dict(cfg)
-        self.keywords = list(cfg.get("youtube_keywords") or ["youtube", "youtu.be"])
+        self.active_site = default_site(cfg)
+        self.rules = rules_mod.RulesConfig.from_site(self.active_site, cfg)
         self.poll_ms = int(cfg.get("poll_ms", 2500))
         self.parent_pin = str(cfg.get("parent_pin", "changeme"))
         self.questions = bank_mod.load_questions(cfg)
@@ -113,40 +118,77 @@ class StudyApp:
         host = str(self.cfg.get("admin_bind", "0.0.0.0"))
 
         def get_status():
-            snap = rules_mod.status_snapshot(self.state, self.rules)
+            snap = rules_mod.status_snapshot(
+                self.state,
+                self.rules,
+                sites=migrate_sites(self.cfg),
+                active_site_id=(self.active_site or {}).get("id"),
+            )
             snap["running"] = True
             snap["in_quiz"] = self.in_quiz
+            snap["tts"] = tts_mod.public_tts_view(self.cfg.get("tts") or {})
             return snap
 
         def get_config():
-            return dict(self.cfg)
+            c = dict(self.cfg)
+            c["sites"] = migrate_sites(c)
+            c["tts"] = tts_mod.public_tts_view(c.get("tts") or {})
+            return c
 
         def do_save(data: dict):
+            allowed = {
+                "unlock_minutes_per_set",
+                "questions_per_set",
+                "pass_ratio",
+                "daily_max_watch_minutes",
+                "wrong_streak_to_extra",
+                "extra_questions",
+                "poll_ms",
+                "answer_delay_seconds",
+                "parent_pin",
+                "admin_password",
+                "bank_file",
+                "admin_port",
+                "youtube_keywords",
+                "sites",
+                "tts",
+                "note",
+                "task_name",
+            }
             for k, v in data.items():
-                if k in self.cfg or k in (
-                    "unlock_minutes_per_set",
-                    "questions_per_set",
-                    "pass_ratio",
-                    "daily_max_watch_minutes",
-                    "wrong_streak_to_extra",
-                    "extra_questions",
-                    "poll_ms",
-                    "answer_delay_seconds",
-                    "parent_pin",
-                    "admin_password",
-                    "bank_file",
-                    "admin_port",
-                ):
-                    self.cfg[k] = v
+                if k in self.cfg or k in allowed:
+                    if k == "tts" and isinstance(v, dict):
+                        cur = dict(self.cfg.get("tts") or {})
+                        # empty token/appid means keep previous secret
+                        for tk, tv in v.items():
+                            if tk in ("token", "appid") and (tv is None or str(tv).strip() == "" or str(tv).startswith("*")):
+                                continue
+                            cur[tk] = tv
+                        self.cfg["tts"] = cur
+                    else:
+                        self.cfg[k] = v
+            migrate_sites(self.cfg)
+            tts_mod.normalize_tts(self.cfg)
+            # Mirror global defaults from first/default site for legacy fields
+            ds = default_site(self.cfg)
+            self.cfg["unlock_minutes_per_set"] = ds.get("unlock_minutes_per_set", self.cfg.get("unlock_minutes_per_set"))
+            self.cfg["questions_per_set"] = ds.get("questions_per_set", self.cfg.get("questions_per_set"))
+            self.cfg["pass_ratio"] = ds.get("pass_ratio", self.cfg.get("pass_ratio"))
+            self.cfg["daily_max_watch_minutes"] = ds.get("daily_max_minutes", self.cfg.get("daily_max_watch_minutes"))
             save_config(self.cfg)
-            self.rules = rules_mod.RulesConfig.from_dict(self.cfg)
+            self.active_site = ds
+            self.rules = rules_mod.RulesConfig.from_site(self.active_site, self.cfg)
             self.parent_pin = str(self.cfg.get("parent_pin", self.parent_pin))
             self.poll_ms = int(self.cfg.get("poll_ms", self.poll_ms))
-            # reload bank if path changed
             try:
                 self.questions = bank_mod.load_questions(self.cfg)
             except Exception as e:
                 log.warning("reload bank: %s", e)
+
+        def add_bonus(minutes: float):
+            added = rules_mod.add_bonus_minutes(self.state, minutes)
+            save_state(self.state)
+            return added
 
         def force_quiz():
             self._force_pending = True
@@ -239,6 +281,7 @@ class StudyApp:
             export_bank=export_bank,
             import_active=import_active,
             password=str(self.cfg.get("admin_password") or self.parent_pin),
+            add_bonus=add_bonus,
         )
         self._admin = ctx
         try:
@@ -323,20 +366,30 @@ class StudyApp:
                 dt = min(dt, self.poll_ms / 1000.0 * 3)
                 dt_min = dt / 60.0
 
-                is_yt, _hwnd, _title = win_yt.foreground_is_youtube(self.keywords)
-                if is_yt and rules_mod.can_watch(self.state, self.rules):
-                    used = rules_mod.consume_watch(self.state, self.rules, dt_min)
-                    if used > 0:
-                        # persist occasionally (every ~15s of wall via tick count not needed — each poll ok but light)
-                        pass
+                is_hit, _hwnd, title = win_yt.foreground_is_youtube(
+                    [k for s in enabled_sites(self.cfg) for k in (s.get("keywords") or [])]
+                )
+                site = match_site(title, self.cfg) if is_hit else None
+                if site is None and is_hit:
+                    site = default_site(self.cfg)
+                if site is not None:
+                    self.active_site = site
+                    site_rules = rules_mod.RulesConfig.from_site(site, self.cfg)
+                    sid = str(site.get("id") or "")
+                    if rules_mod.can_watch(self.state, site_rules, sid):
+                        rules_mod.consume_watch(self.state, site_rules, dt_min, sid)
 
-                # Quiz when forced, or when kid is on YouTube but cannot watch
-                # (balance 0 or daily cap). Do not popup at idle/boot.
+                # Quiz when forced, or when kid is on a tracked site but cannot watch
                 should = False
                 if self._force_pending:
                     should = True
-                elif is_yt and rules_mod.needs_quiz(self.state, self.rules):
-                    should = True
+                    if self.active_site is None:
+                        self.active_site = default_site(self.cfg)
+                elif site is not None:
+                    site_rules = rules_mod.RulesConfig.from_site(site, self.cfg)
+                    sid = str(site.get("id") or "")
+                    if rules_mod.needs_quiz(self.state, site_rules, sid):
+                        should = True
                 if should:
                     self._force_pending = False
                     save_state(self.state)
@@ -352,17 +405,25 @@ class StudyApp:
             except Exception:
                 pass
 
+    def _speak(self, text: str) -> None:
+        tts_mod.speak(text, self.cfg.get("tts") or {})
+
     def _start_quiz_set(self):
         if self.in_quiz:
             return
+        if self.active_site is None:
+            self.active_site = default_site(self.cfg)
+        self.rules = rules_mod.RulesConfig.from_site(self.active_site, self.cfg)
+        site_id = str(self.active_site.get("id") or "")
+        kws = list(self.active_site.get("keywords") or []) or [k for s in enabled_sites(self.cfg) for k in (s.get("keywords") or [])]
         self.in_quiz = True
         self.state["quiz_active"] = True
         save_state(self.state)
-        log.info("quiz set start")
+        log.info("quiz set start site=%s", site_id)
         self.saved_mute = win_yt.get_system_mute()
         win_yt.set_system_mute(True)
         self.minimized = []
-        for hwnd, title in win_yt.find_youtube_windows(self.keywords):
+        for hwnd, title in win_yt.find_youtube_windows(kws):
             win_yt.minimize_hwnd(hwnd)
             self.minimized.append(hwnd)
             log.info("minimized %s", title[:60])
@@ -375,6 +436,8 @@ class StudyApp:
             parent_pin=self.parent_pin,
             on_finished=self._on_quiz_finished,
             on_parent_quit=self._authorized_stop,
+            site_id=site_id,
+            speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
         )
         runner.start()
 
@@ -383,6 +446,7 @@ class StudyApp:
         if not passed:
             # immediately another set
             log.info("set failed — starting another")
+            site_id = str((self.active_site or {}).get("id") or "")
             runner = QuizSetRunner(
                 root=self.root,
                 questions=self.questions,
@@ -391,6 +455,8 @@ class StudyApp:
                 parent_pin=self.parent_pin,
                 on_finished=self._on_quiz_finished,
                 on_parent_quit=self._authorized_stop,
+                site_id=site_id,
+                speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
             )
             runner.start()
             return
@@ -422,7 +488,10 @@ class StudyApp:
                 log.warning("restore %s: %s", hwnd, e)
         self.minimized = []
         try:
-            for hwnd, _title in win_yt.find_youtube_windows(self.keywords):
+            kws = list((self.active_site or {}).get("keywords") or []) or [
+                k for s in enabled_sites(self.cfg) for k in (s.get("keywords") or [])
+            ]
+            for hwnd, _title in win_yt.find_youtube_windows(kws):
                 if hwnd not in restored:
                     win_yt.restore_hwnd(hwnd)
         except Exception as e:

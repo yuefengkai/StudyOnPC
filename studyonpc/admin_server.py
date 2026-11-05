@@ -179,6 +179,7 @@ ADMIN_HTML = f"""<!DOCTYPE html>
 
     <div class="tabs">
       <button class="tab active" data-tab="rules" onclick="showTab('rules')">规则设置</button>
+      <button class="tab" data-tab="sites" onclick="showTab('sites')">网站站点</button>
       <button class="tab" data-tab="banks" onclick="showTab('banks')">题库管理</button>
       <button class="tab" data-tab="ops" onclick="showTab('ops')">快捷操作</button>
       <button class="tab" data-tab="logs" onclick="showTab('logs')">答题记录</button>
@@ -191,6 +192,33 @@ ADMIN_HTML = f"""<!DOCTYPE html>
         <button class="btn green" onclick="saveRules()">保存规则</button>
       </div>
       <div id="msg-rules" class="toast"></div>
+    </div>
+
+    <div class="card tabpane" id="tab-sites" style="display:none">
+      <h2>网站站点（共享余额）</h2>
+      <p class="muted">各站点共享解锁余额；每日上限按站点分别统计。关键词匹配窗口标题（不区分大小写）。</p>
+      <div id="sitesEditor"></div>
+      <div class="row-actions">
+        <button class="btn" onclick="addSiteRow()">＋ 添加站点</button>
+        <button class="btn green" onclick="saveSites()">保存站点</button>
+      </div>
+      <div id="msg-sites" class="toast"></div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:18px 0"/>
+      <h2>语音朗读（火山引擎 TTS）</h2>
+      <p class="muted">密钥只保存在本机 config.json（已 gitignore）。控制台申请 appid / access_token 后填入。</p>
+      <div class="form-grid" id="ttsForm">
+        <div><label>启用 TTS</label><select id="tts_enabled"><option value="false">关闭</option><option value="true">开启</option></select></div>
+        <div><label>cluster</label><input id="tts_cluster" placeholder="volcano_tts"/></div>
+        <div><label>voice_type</label><input id="tts_voice" placeholder="BV001_streaming"/></div>
+        <div><label>appid</label><input id="tts_appid" placeholder="留空则不改动已保存值" autocomplete="off"/></div>
+        <div><label>access_token</label><input id="tts_token" type="password" placeholder="留空则不改动已保存值" autocomplete="new-password"/></div>
+        <div><label>语速 speed_ratio</label><input id="tts_speed" placeholder="1.0"/></div>
+      </div>
+      <p class="muted" id="ttsMeta"></p>
+      <div class="row-actions">
+        <button class="btn green" onclick="saveTts()">保存 TTS</button>
+      </div>
+      <div id="msg-tts" class="toast"></div>
     </div>
 
     <div class="card tabpane" id="tab-banks" style="display:none">
@@ -257,8 +285,12 @@ ADMIN_HTML = f"""<!DOCTYPE html>
 
     <div class="card tabpane" id="tab-ops" style="display:none">
       <h2>快捷操作</h2>
-      <p class="muted">强制出题会立刻全屏弹出一组题（会静音并最小化 YouTube）。</p>
+      <p class="muted">强制出题会立刻全屏弹出一组题（会静音并最小化匹配站点窗口）。</p>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div><label>今日加时（分钟，写入共享余额）</label><input id="bonusMin" type="number" value="10" min="1" step="1"/></div>
+      </div>
       <div class="row-actions">
+        <button class="btn green" onclick="addBonus()">🎁 今日加时</button>
         <button class="btn" onclick="forceQuiz()">⚡ 立即出题一组</button>
         <button class="btn danger" onclick="doQuit()">退出守护（需 PIN）</button>
       </div>
@@ -303,6 +335,87 @@ const fieldGroups=[
     ['bank_file','题库路径'],
   ]}},
 ];
+
+let sitesDraft=[];
+function siteCard(s, idx){{
+  const kw=(s.keywords||[]).join(', ');
+  return `<div class="card" style="margin-bottom:10px;padding:12px" data-idx="${{idx}}">
+    <div class="form-grid">
+      <div><label>ID</label><input data-k="id" value="${{s.id||''}}"/></div>
+      <div><label>名称</label><input data-k="name" value="${{s.name||''}}"/></div>
+      <div><label>启用</label><select data-k="enabled"><option value="true" ${{s.enabled!==false?'selected':''}}>是</option><option value="false" ${{s.enabled===false?'selected':''}}>否</option></select></div>
+      <div><label>关键词（逗号分隔）</label><input data-k="keywords" value="${{kw}}"/></div>
+      <div><label>每组解锁分钟</label><input data-k="unlock_minutes_per_set" type="number" value="${{s.unlock_minutes_per_set??10}}"/></div>
+      <div><label>每日上限分钟</label><input data-k="daily_max_minutes" type="number" value="${{s.daily_max_minutes??60}}"/></div>
+      <div><label>每组题数</label><input data-k="questions_per_set" type="number" value="${{s.questions_per_set??3}}"/></div>
+      <div><label>及格比例</label><input data-k="pass_ratio" type="number" step="0.01" value="${{s.pass_ratio??0.6667}}"/></div>
+    </div>
+    <div class="row-actions"><button class="btn ghost" onclick="removeSiteRow(${{idx}})">删除此站点</button></div>
+  </div>`;
+}}
+function renderSites(){{
+  document.getElementById('sitesEditor').innerHTML = sitesDraft.map((s,i)=>siteCard(s,i)).join('') || '<p class="muted">暂无站点，请添加。</p>';
+}}
+function readSitesFromDom(){{
+  const cards=[...document.querySelectorAll('#sitesEditor [data-idx]')];
+  return cards.map(card=>{{
+    const get=k=>{{
+      const el=card.querySelector(`[data-k="${{k}}"]`);
+      return el?el.value:'';
+    }};
+    return {{
+      id: get('id').trim()||('site'+Math.random().toString(16).slice(2,6)),
+      name: get('name').trim()||'未命名',
+      enabled: get('enabled')==='true',
+      keywords: get('keywords').split(/[,， ]+/).map(x=>x.trim()).filter(Boolean),
+      unlock_minutes_per_set: parseFloat(get('unlock_minutes_per_set')||'10'),
+      daily_max_minutes: parseFloat(get('daily_max_minutes')||'60'),
+      questions_per_set: parseInt(get('questions_per_set')||'3',10),
+      pass_ratio: parseFloat(get('pass_ratio')||'0.6667'),
+    }};
+  }});
+}}
+function addSiteRow(){{
+  sitesDraft=readSitesFromDom();
+  sitesDraft.push({{id:'site'+(sitesDraft.length+1), name:'新站点', enabled:true, keywords:['example'], unlock_minutes_per_set:10, daily_max_minutes:60, questions_per_set:3, pass_ratio:0.6667}});
+  renderSites();
+}}
+function removeSiteRow(idx){{
+  sitesDraft=readSitesFromDom();
+  sitesDraft.splice(idx,1);
+  renderSites();
+}}
+async function saveSites(){{
+  const sites=readSitesFromDom();
+  const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify({{sites}})}});
+  const j=await r.json();
+  document.getElementById('msg-sites').innerHTML=r.ok?'<span class="ok">站点已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
+  if(r.ok){{ sitesDraft=sites; }}
+}}
+async function saveTts(){{
+  const body={{ tts:{{
+    enabled: document.getElementById('tts_enabled').value==='true',
+    cluster: document.getElementById('tts_cluster').value.trim()||'volcano_tts',
+    voice_type: document.getElementById('tts_voice').value.trim()||'BV001_streaming',
+    appid: document.getElementById('tts_appid').value.trim(),
+    token: document.getElementById('tts_token').value.trim(),
+    speed_ratio: parseFloat(document.getElementById('tts_speed').value||'1')||1,
+    provider:'volcengine',
+    encoding:'mp3',
+  }}}};
+  const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify(body)}});
+  const j=await r.json();
+  document.getElementById('msg-tts').innerHTML=r.ok?'<span class="ok">TTS 已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
+  if(r.ok){{ document.getElementById('tts_token').value=''; document.getElementById('tts_appid').value=''; loadPanel(); }}
+}}
+async function addBonus(){{
+  const minutes=parseFloat(document.getElementById('bonusMin').value||'0');
+  const r=await fetch('/api/admin/bonus',{{method:'POST',headers:headers(),body:JSON.stringify({{minutes}})}});
+  const j=await r.json();
+  document.getElementById('msg-ops').innerHTML=r.ok?('<span class="ok">已加时 '+j.added+' 分钟</span>'):('<span class="err">'+(j.error||'失败')+'</span>');
+  if(r.ok) loadDash();
+}}
+
 function headers(){{return token?{{'Authorization':'Bearer '+token,'Content-Type':'application/json'}}:{{'Content-Type':'application/json'}};}}
 function showTab(name){{
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
@@ -310,6 +423,7 @@ function showTab(name){{
   document.getElementById('tab-'+name).style.display='block';
   if(name==='logs') loadLogs();
   if(name==='banks') loadQuestions(qPage||1);
+  if(name==='sites') renderSites();
 }}
 async function doLogin(){{
   const r=await fetch('/api/login',{{method:'POST',headers:{{'Content-Type':'application/json'}},
@@ -345,6 +459,19 @@ async function loadAdmin(){{
     }}
   }}
   document.getElementById('rules').innerHTML=html;
+  sitesDraft = Array.isArray(j.sites) ? j.sites : [];
+  renderSites();
+  const tts = j.tts || {{}};
+  document.getElementById('tts_enabled').value = tts.enabled ? 'true' : 'false';
+  document.getElementById('tts_cluster').value = tts.cluster || 'volcano_tts';
+  document.getElementById('tts_voice').value = tts.voice_type || 'BV001_streaming';
+  document.getElementById('tts_speed').value = tts.speed_ratio || 1;
+  document.getElementById('tts_appid').value = '';
+  document.getElementById('tts_token').value = '';
+  document.getElementById('ttsMeta').textContent =
+    (tts.appid_set ? ('appid 已配置；') : 'appid 未配置；') +
+    (tts.token_set ? 'token 已配置' : 'token 未配置') +
+    (tts.token_masked ? ('（'+tts.token_masked+'）') : '');
   const b=await fetch('/api/admin/banks',{{headers:headers()}});
   const bj=await b.json();
   const banks=bj.banks||[];
@@ -572,6 +699,7 @@ class AdminContext:
         delete_question=None,
         export_bank=None,
         import_active=None,
+        add_bonus=None,
     ):
         self.get_status = get_status
         self.get_config = get_config
@@ -580,6 +708,7 @@ class AdminContext:
         self.request_quit = request_quit
         self.list_banks = list_banks
         self.import_bank = import_bank
+        self.add_bonus = add_bonus or (lambda m: 0.0)
         self.get_answers = get_answers or (lambda: [])
         self.list_questions = list_questions or (
             lambda **kw: {"items": [], "total": 0, "page": 1, "pages": 1, "subjects": [], "page_size": 20}
@@ -752,6 +881,13 @@ def _make_handler(ctx: AdminContext):
             if path == "/api/admin/force_quiz":
                 ctx.force_quiz()
                 return self._json(200, {"ok": True})
+            if path == "/api/admin/bonus":
+                try:
+                    mins = float(data.get("minutes") or 0)
+                    added = float(ctx.add_bonus(mins))
+                    return self._json(200, {"ok": True, "added": added})
+                except Exception as e:
+                    return self._json(400, {"error": str(e)})
             if path == "/api/admin/quit":
                 ok, msg = ctx.request_quit(str(data.get("pin") or ""))
                 return self._json(200 if ok else 403, {"ok": ok, "error": None if ok else msg})
