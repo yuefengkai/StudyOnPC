@@ -4,25 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "studyonpc/**"
-      - "studyonpc.py"
-      - "StudyOnPC.spec"
-      - "build_exe.ps1"
-      - "requirements.txt"
-      - "config.example.json"
-      - "data/banks/**"
-      - "assets/**"
-      - "scripts/**"
-      - "install.ps1"
-      - "uninstall.ps1"
-      - "parent_quit.ps1"
-      - "start.bat"
-      - "start-console.bat"
-      - ".github/workflows/build-exe.yml"
+    tags: ["v*"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -58,7 +43,6 @@ jobs:
           if (-not (Test-Path $exe)) { throw "Missing built exe: $exe" }
           $item = Get-Item $exe
           Write-Host ("Built {0} ({1:N0} bytes)" -f $item.FullName, $item.Length)
-          # Guard: onefile should not ship an _internal folder
           if (Test-Path (Join-Path $env:STUDYONPC_DIST '_internal')) {
             throw 'Unexpected _internal folder — build still looks like onedir'
           }
@@ -70,3 +54,26 @@ jobs:
           path: StudyOnPC-dist/StudyOnPC.exe
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: StudyOnPC-dist/StudyOnPC.exe
+          name: StudyOnPC ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            ## 下载
+
+            附件 **StudyOnPC.exe** 为 Windows **单文件** 包（PyInstaller onefile）。
+
+            ## 使用说明
+
+            1. 下载 `StudyOnPC.exe` 放到任意目录后双击运行
+            2. **首次运行**会在 exe 同目录自动生成 `config.json`、`data\`、`logs\` 等
+            3. 请立即修改 `config.json` 里的 `parent_pin` / `admin_password`（默认仅为占位）
+            4. 开机启动等辅助脚本见仓库源码（`install.ps1` 等），按需拷到 exe 旁使用
+
+            > 冷启动会解压到临时目录，略慢于文件夹版；日常只需分发这一个 exe。
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
