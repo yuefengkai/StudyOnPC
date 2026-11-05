@@ -412,6 +412,12 @@ class StudyApp:
                 pass
 
     def _speak(self, text: str) -> None:
+        # Quiz mode mutes the system so YouTube is silent; unmute briefly so TTS is audible.
+        try:
+            from . import win_yt
+            win_yt.set_system_mute(False)
+        except Exception as e:
+            log.warning("unmute for TTS: %s", e)
         tts_mod.speak(text, self.cfg.get("tts") or {})
 
     def _start_quiz_set(self):
@@ -427,7 +433,13 @@ class StudyApp:
         save_state(self.state)
         log.info("quiz set start site=%s", site_id)
         self.saved_mute = win_yt.get_system_mute()
-        win_yt.set_system_mute(True)
+        # If TTS is on, keep system unmuted so「听一听」works. YouTube windows are minimized.
+        # Without TTS, mute the endpoint so background video audio cannot leak through.
+        if tts_mod.tts_configured(self.cfg.get("tts") or {}):
+            win_yt.set_system_mute(False)
+            log.info("quiz TTS enabled — system left unmuted")
+        else:
+            win_yt.set_system_mute(True)
         self.minimized = []
         for hwnd, title in win_yt.find_youtube_windows(kws):
             win_yt.minimize_hwnd(hwnd)

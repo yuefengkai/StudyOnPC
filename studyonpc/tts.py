@@ -186,6 +186,70 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
     return path
 
 
+def _play_windows_mci(path: Path) -> bool:
+    """Play mp3/wav via winmm MCI (stdlib ctypes). Returns True on success."""
+    import ctypes
+
+    winmm = ctypes.windll.winmm
+    buf = ctypes.create_unicode_buffer(512)
+    alias = "studyonpc_tts"
+
+    def mci(cmd: str) -> int:
+        return int(winmm.mciSendStringW(cmd, buf, 511, None))
+
+    path_str = str(path.resolve())
+    mci(f"close {alias}")
+    rc = mci(f'open "{path_str}" type mpegvideo alias {alias}')
+    if rc != 0:
+        rc = mci(f'open "{path_str}" alias {alias}')
+    if rc != 0:
+        winmm.mciGetErrorStringW(rc, buf, 511)
+        log.warning("tts mci open failed (%s): %s", rc, buf.value)
+        return False
+    # volume 0..1000
+    mci(f"setaudio {alias} volume to 1000")
+    rc = mci(f"play {alias} wait")
+    mci(f"close {alias}")
+    if rc != 0:
+        winmm.mciGetErrorStringW(rc, buf, 511)
+        log.warning("tts mci play failed (%s): %s", rc, buf.value)
+        return False
+    return True
+
+
+def _play_windows_mediaplayer(path: Path) -> bool:
+    """Fallback: WPF MediaPlayer via PowerShell."""
+    uri = path.resolve().as_uri().replace("'", "''")
+    ps = (
+        "Add-Type -AssemblyName presentationCore; "
+        "$p=New-Object System.Windows.Media.MediaPlayer; "
+        f"$p.Open([Uri]'{uri}'); $p.Volume=1; $p.Play(); "
+        "Start-Sleep -Milliseconds 300; "
+        "$deadline=(Get-Date).AddSeconds(8); "
+        "while(-not $p.NaturalDuration.HasTimeSpan){ "
+        "  if((Get-Date) -gt $deadline){ Write-Error 'MediaPlayer duration timeout'; exit 2 }; "
+        "  Start-Sleep -Milliseconds 50 "
+        "}; "
+        "$ms=[int]($p.NaturalDuration.TimeSpan.TotalMilliseconds)+400; "
+        "Start-Sleep -Milliseconds $ms; $p.Stop(); $p.Close()"
+    )
+    r = subprocess.run(
+        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps],
+        capture_output=True,
+        text=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        timeout=60,
+    )
+    if r.returncode != 0:
+        log.warning(
+            "tts MediaPlayer failed rc=%s stderr=%s",
+            r.returncode,
+            (r.stderr or r.stdout or "")[:300],
+        )
+        return False
+    return True
+
+
 def play_file(path: Path) -> None:
     """Best-effort async play on Windows; no-op elsewhere if player missing."""
     if not path or not path.exists():
@@ -194,22 +258,12 @@ def play_file(path: Path) -> None:
     def _run() -> None:
         try:
             if os.name == "nt":
-                uri = path.resolve().as_uri()
-                ps = (
-                    "Add-Type -AssemblyName presentationCore; "
-                    "$p=New-Object System.Windows.Media.MediaPlayer; "
-                    f"$p.Open([Uri]'{uri}'); $p.Volume=1; $p.Play(); "
-                    "Start-Sleep -Milliseconds 200; "
-                    "while($p.NaturalDuration.HasTimeSpan -eq $false){Start-Sleep -Milliseconds 50}; "
-                    "$ms=[int]($p.NaturalDuration.TimeSpan.TotalMilliseconds)+400; "
-                    "Start-Sleep -Milliseconds $ms; $p.Stop(); $p.Close()"
-                )
-                subprocess.run(
-                    ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps],
-                    capture_output=True,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                    timeout=60,
-                )
+                # Prefer MCI (works without WPF session quirks); then MediaPlayer.
+                if _play_windows_mci(path):
+                    return
+                if _play_windows_mediaplayer(path):
+                    return
+                log.warning("tts play: all Windows backends failed for %s", path.name)
             else:
                 for cmd in (
                     ("ffplay", "-nodisp", "-autoexit", str(path)),
