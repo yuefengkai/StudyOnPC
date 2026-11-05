@@ -8,19 +8,19 @@
 
 ## 界面预览
 
-全屏答题界面（带拼音标注），答对够题数才解锁观看时长：
+全屏答题界面（带拼音标注 + 插图），答对够题数才解锁观看时长：
 
-![英语礼貌用语答题](docs/screenshots/quiz-english.png)
+![数学加减插图题](docs/screenshots/quiz-math.png)
 
-*英语 · 礼貌用语*
+*数学 · 5 以内加减（插图题）*
 
-![英语动物单元答题](docs/screenshots/quiz-animals.png)
+![英语动物单元插图题](docs/screenshots/quiz-animals.png)
 
-*英语 · Unit5 动物*
+*英语 · Unit5 动物（插图题）*
 
-![语文拼音拼读答题](docs/screenshots/quiz-pinyin.png)
+![语文识字插图题](docs/screenshots/quiz-chinese.png)
 
-*语文 · 拼音拼读*
+*语文 · 口耳目手足（插图题）*
 
 
 ## Windows 可执行文件（推荐）
