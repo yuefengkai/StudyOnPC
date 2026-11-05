@@ -136,7 +136,7 @@ class QuizSetRunner:
     def _on_speak(self) -> None:
         if not self.speak_fn:
             try:
-                messagebox.showinfo("听一听", "语音朗读未开启。请在管理页打开 TTS，并填写火山引擎 appid/token。", parent=self._win or self.root)
+                messagebox.showinfo("听一听", "语音朗读未开启。请在管理页打开 TTS，并填写火山引擎 api_key 与 speaker（V3）。", parent=self._win or self.root)
             except Exception:
                 pass
             return

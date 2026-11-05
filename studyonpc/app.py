@@ -159,9 +159,15 @@ class StudyApp:
                 if k in self.cfg or k in allowed:
                     if k == "tts" and isinstance(v, dict):
                         cur = dict(self.cfg.get("tts") or {})
-                        # empty token/appid means keep previous secret
+                        # empty api_key (or legacy token/appid) means keep previous secret
                         for tk, tv in v.items():
-                            if tk in ("token", "appid") and (tv is None or str(tv).strip() == "" or str(tv).startswith("*")):
+                            if tk in ("api_key", "token", "appid") and (
+                                tv is None or str(tv).strip() == "" or str(tv).startswith("*")
+                            ):
+                                continue
+                            if tk in ("token", "appid", "cluster", "voice_type"):
+                                # strip legacy V1 fields from live config
+                                cur.pop(tk, None)
                                 continue
                             cur[tk] = tv
                         self.cfg["tts"] = cur

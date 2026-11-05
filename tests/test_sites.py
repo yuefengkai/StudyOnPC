@@ -78,11 +78,23 @@ class TestSites(unittest.TestCase):
         self.assertAlmostEqual(g, 5)
         self.assertAlmostEqual(st["balance_minutes"], 5)
 
-    def test_tts_public_masks_token(self):
-        view = tts_mod.public_tts_view({"enabled": True, "appid": "abc", "token": "secret123"})
-        self.assertTrue(view["token_set"])
-        self.assertNotIn("secret123", view.get("token_masked", ""))
-        self.assertNotEqual(view.get("token", "x"), "secret123")
+    def test_tts_public_masks_api_key(self):
+        view = tts_mod.public_tts_view({
+            "enabled": True,
+            "api_key": "secret123",
+            "speaker": "zh_male_tiancaitongsheng_uranus_bigtts",
+        })
+        self.assertTrue(view["api_key_set"])
+        self.assertNotIn("secret123", view.get("api_key_masked", ""))
+        self.assertTrue(view["api_key_masked"].endswith("t123"))
+        self.assertEqual(view["speaker"], "zh_male_tiancaitongsheng_uranus_bigtts")
+
+    def test_tts_normalize_drops_v1(self):
+        cfg = {"tts": {"enabled": True, "api_key": "k", "speaker": "s", "appid": "old", "token": "tok"}}
+        out = tts_mod.normalize_tts(cfg)
+        self.assertNotIn("appid", out)
+        self.assertNotIn("token", out)
+        self.assertEqual(out["api_key"], "k")
 
 
 if __name__ == "__main__":

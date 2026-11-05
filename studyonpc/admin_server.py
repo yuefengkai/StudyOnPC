@@ -204,15 +204,14 @@ ADMIN_HTML = f"""<!DOCTYPE html>
       </div>
       <div id="msg-sites" class="toast"></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0"/>
-      <h2>语音朗读（火山引擎 TTS）</h2>
-      <p class="muted">密钥只保存在本机 config.json（已 gitignore）。控制台申请 appid / access_token 后填入。</p>
+      <h2>语音朗读（火山引擎 TTS · V3）</h2>
+      <p class="muted">密钥只保存在本机 config.json（已 gitignore）。使用新控制台 <b>API Key</b>（X-Api-Key），与 CaptainChen Secrets.plist 的 VolcanoApiKey 同源。旧版 appid/token 已废弃。</p>
       <div class="form-grid" id="ttsForm">
         <div><label>启用 TTS</label><select id="tts_enabled"><option value="false">关闭</option><option value="true">开启</option></select></div>
-        <div><label>cluster</label><input id="tts_cluster" placeholder="volcano_tts"/></div>
-        <div><label>voice_type</label><input id="tts_voice" placeholder="BV001_streaming"/></div>
-        <div><label>appid</label><input id="tts_appid" placeholder="留空则不改动已保存值" autocomplete="off"/></div>
-        <div><label>access_token</label><input id="tts_token" type="password" placeholder="留空则不改动已保存值" autocomplete="new-password"/></div>
-        <div><label>语速 speed_ratio</label><input id="tts_speed" placeholder="1.0"/></div>
+        <div><label>speaker 音色</label><input id="tts_speaker" placeholder="zh_male_tiancaitongsheng_uranus_bigtts"/></div>
+        <div><label>resource_id</label><input id="tts_resource" placeholder="seed-tts-1.0"/></div>
+        <div><label>api_key</label><input id="tts_api_key" type="password" placeholder="留空则不改动已保存值" autocomplete="new-password"/></div>
+        <div><label>失败回退系统朗读</label><select id="tts_fallback"><option value="true">开启</option><option value="false">关闭</option></select></div>
       </div>
       <p class="muted" id="ttsMeta"></p>
       <div class="row-actions">
@@ -395,18 +394,18 @@ async function saveSites(){{
 async function saveTts(){{
   const body={{ tts:{{
     enabled: document.getElementById('tts_enabled').value==='true',
-    cluster: document.getElementById('tts_cluster').value.trim()||'volcano_tts',
-    voice_type: document.getElementById('tts_voice').value.trim()||'BV001_streaming',
-    appid: document.getElementById('tts_appid').value.trim(),
-    token: document.getElementById('tts_token').value.trim(),
-    speed_ratio: parseFloat(document.getElementById('tts_speed').value||'1')||1,
+    speaker: document.getElementById('tts_speaker').value.trim()||'zh_male_tiancaitongsheng_uranus_bigtts',
+    resource_id: document.getElementById('tts_resource').value.trim()||'seed-tts-1.0',
+    api_key: document.getElementById('tts_api_key').value.trim(),
+    system_fallback: document.getElementById('tts_fallback').value==='true',
     provider:'volcengine',
     encoding:'mp3',
+    sample_rate:24000,
   }}}};
   const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify(body)}});
   const j=await r.json();
   document.getElementById('msg-tts').innerHTML=r.ok?'<span class="ok">TTS 已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ document.getElementById('tts_token').value=''; document.getElementById('tts_appid').value=''; loadPanel(); }}
+  if(r.ok){{ document.getElementById('tts_api_key').value=''; loadPanel(); }}
 }}
 async function addBonus(){{
   const minutes=parseFloat(document.getElementById('bonusMin').value||'0');
@@ -463,15 +462,13 @@ async function loadAdmin(){{
   renderSites();
   const tts = j.tts || {{}};
   document.getElementById('tts_enabled').value = tts.enabled ? 'true' : 'false';
-  document.getElementById('tts_cluster').value = tts.cluster || 'volcano_tts';
-  document.getElementById('tts_voice').value = tts.voice_type || 'BV001_streaming';
-  document.getElementById('tts_speed').value = tts.speed_ratio || 1;
-  document.getElementById('tts_appid').value = '';
-  document.getElementById('tts_token').value = '';
+  document.getElementById('tts_speaker').value = tts.speaker || 'zh_male_tiancaitongsheng_uranus_bigtts';
+  document.getElementById('tts_resource').value = tts.resource_id || 'seed-tts-1.0';
+  document.getElementById('tts_fallback').value = (tts.system_fallback === false) ? 'false' : 'true';
+  document.getElementById('tts_api_key').value = '';
   document.getElementById('ttsMeta').textContent =
-    (tts.appid_set ? ('appid 已配置；') : 'appid 未配置；') +
-    (tts.token_set ? 'token 已配置' : 'token 未配置') +
-    (tts.token_masked ? ('（'+tts.token_masked+'）') : '');
+    (tts.api_key_set ? ('api_key 已配置' + (tts.api_key_masked ? ('（'+tts.api_key_masked+'）') : '') + '；') : 'api_key 未配置；') +
+    ('speaker=' + (tts.speaker || '') + '；resource_id=' + (tts.resource_id || 'seed-tts-1.0'));
   const b=await fetch('/api/admin/banks',{{headers:headers()}});
   const bj=await b.json();
   const banks=bj.banks||[];

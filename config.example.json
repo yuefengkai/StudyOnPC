@@ -10,13 +10,19 @@
   "poll_ms": 2500,
   "admin_port": 8099,
   "admin_bind": "0.0.0.0",
-  "youtube_keywords": ["youtube", "youtu.be"],
+  "youtube_keywords": [
+    "youtube",
+    "youtu.be"
+  ],
   "sites": [
     {
       "id": "youtube",
       "name": "YouTube",
       "enabled": true,
-      "keywords": ["youtube", "youtu.be"],
+      "keywords": [
+        "youtube",
+        "youtu.be"
+      ],
       "unlock_minutes_per_set": 10,
       "daily_max_minutes": 60,
       "questions_per_set": 3,
@@ -26,16 +32,16 @@
   "tts": {
     "enabled": false,
     "provider": "volcengine",
-    "appid": "",
-    "token": "",
-    "cluster": "volcano_tts",
-    "voice_type": "BV001_streaming",
-    "api_url": "https://openspeech.bytedance.com/api/v1/tts",
+    "api_key": "",
+    "speaker": "zh_male_tiancaitongsheng_uranus_bigtts",
+    "resource_id": "seed-tts-1.0",
+    "api_url": "https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse",
     "encoding": "mp3",
-    "speed_ratio": 1.0
+    "sample_rate": 24000,
+    "system_fallback": true
   },
   "bank_file": "data/banks/grade1-shenzhen.json",
   "task_name": "StudyOnPC",
-  "note": "示例配置：复制为 config.json 后修改 PIN；火山 TTS 的 appid/token 只放本地 config.json，勿提交仓库。",
+  "note": "示例配置：复制为 config.json 后修改 PIN；火山 TTS V3 的 api_key 只放本地 config.json，勿提交仓库。旧版 appid/token/cluster/voice_type 已废弃，会被忽略。",
   "answer_delay_seconds": 5
 }

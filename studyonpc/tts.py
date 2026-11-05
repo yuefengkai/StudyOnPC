@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Volcengine / ByteDance openspeech TTS (HTTP v1) + local cache/play."""
+"""Volcengine / ByteDance openspeech TTS (HTTP V3 SSE) + local cache/play.
+
+Aligned with CaptainChen VolcanoTTSProvider:
+  POST https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse
+  Headers: X-Api-Key, X-Api-Resource-Id, X-Api-Request-Id
+  Body: user.uid + req_params.{text,speaker,audio_params}
+  Response: SSE lines ``data: {json}``; concatenate base64 ``data`` chunks → mp3.
+
+Legacy V1 fields (appid/token/cluster/voice_type) are ignored if present.
+"""
 from __future__ import annotations
 
 import base64
@@ -18,16 +27,23 @@ from .paths import DATA_DIR, ensure_runtime_dirs
 
 log = logging.getLogger("studyonpc.tts")
 
+DEFAULT_API_URL = "https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse"
+DEFAULT_SPEAKER = "zh_male_tiancaitongsheng_uranus_bigtts"
+DEFAULT_RESOURCE_ID = "seed-tts-1.0"
+
+# V1 keys kept only so old config.json does not crash normalize; never sent to API.
+_LEGACY_V1_KEYS = ("appid", "token", "cluster", "voice_type")
+
 DEFAULT_TTS: dict[str, Any] = {
     "enabled": False,
     "provider": "volcengine",
-    "appid": "",
-    "token": "",
-    "cluster": "volcano_tts",
-    "voice_type": "BV001_streaming",
-    "api_url": "https://openspeech.bytedance.com/api/v1/tts",
+    "api_key": "",
+    "speaker": DEFAULT_SPEAKER,
+    "resource_id": DEFAULT_RESOURCE_ID,
+    "api_url": DEFAULT_API_URL,
     "encoding": "mp3",
-    "speed_ratio": 1.0,
+    "sample_rate": 24000,
+    "system_fallback": True,
 }
 
 CACHE_DIR_NAME = "tts_cache"
@@ -36,24 +52,33 @@ CACHE_DIR_NAME = "tts_cache"
 def normalize_tts(cfg: dict[str, Any]) -> dict[str, Any]:
     raw = cfg.get("tts") if isinstance(cfg.get("tts"), dict) else {}
     out = dict(DEFAULT_TTS)
-    out.update({k: raw[k] for k in DEFAULT_TTS if k in raw})
+    # Prefer V3 keys; drop legacy V1 from the normalized view except we leave them
+    # out of DEFAULT so they are not re-persisted unless still in raw and we strip.
+    for k in DEFAULT_TTS:
+        if k in raw:
+            out[k] = raw[k]
     out["enabled"] = bool(out.get("enabled"))
-    out["appid"] = str(out.get("appid") or "").strip()
-    out["token"] = str(out.get("token") or "").strip()
-    out["cluster"] = str(out.get("cluster") or "volcano_tts").strip()
-    out["voice_type"] = str(out.get("voice_type") or "BV001_streaming").strip()
-    out["api_url"] = str(out.get("api_url") or DEFAULT_TTS["api_url"]).strip()
-    out["encoding"] = str(out.get("encoding") or "mp3").strip().lower()
+    out["api_key"] = str(out.get("api_key") or "").strip()
+    out["speaker"] = str(out.get("speaker") or DEFAULT_SPEAKER).strip() or DEFAULT_SPEAKER
+    out["resource_id"] = (
+        str(out.get("resource_id") or DEFAULT_RESOURCE_ID).strip() or DEFAULT_RESOURCE_ID
+    )
+    out["api_url"] = str(out.get("api_url") or DEFAULT_API_URL).strip() or DEFAULT_API_URL
+    out["encoding"] = str(out.get("encoding") or "mp3").strip().lower() or "mp3"
     try:
-        out["speed_ratio"] = float(out.get("speed_ratio") or 1.0)
+        out["sample_rate"] = int(out.get("sample_rate") or 24000)
     except Exception:
-        out["speed_ratio"] = 1.0
+        out["sample_rate"] = 24000
+    out["system_fallback"] = bool(out.get("system_fallback", True))
+    # Do not carry V1 secrets into the live config object (avoid accidental reuse).
+    for k in _LEGACY_V1_KEYS:
+        out.pop(k, None)
     cfg["tts"] = out
     return out
 
 
 def tts_configured(tts: dict[str, Any]) -> bool:
-    return bool(tts.get("enabled") and tts.get("appid") and tts.get("token"))
+    return bool(tts.get("enabled") and tts.get("api_key") and tts.get("speaker"))
 
 
 def cache_dir() -> Path:
@@ -64,23 +89,50 @@ def cache_dir() -> Path:
 
 
 def _cache_key(text: str, tts: dict[str, Any]) -> str:
-    h = hashlib.sha1(
-        f"{tts.get('voice_type')}|{tts.get('encoding')}|{tts.get('speed_ratio')}|{text}".encode("utf-8")
+    h = hashlib.sha256(
+        f"{tts.get('speaker')}|{tts.get('resource_id')}|{tts.get('encoding')}|{text}".encode(
+            "utf-8"
+        )
     ).hexdigest()
-    ext = "mp3" if tts.get("encoding") == "mp3" else "wav"
-    return f"{h}.{ext}"
+    return f"{h}.mp3"
+
+
+def _parse_sse_audio(raw: bytes) -> bytes | None:
+    try:
+        text = raw.decode("utf-8")
+    except Exception:
+        return None
+    audio = bytearray()
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("data:"):
+            continue
+        json_str = line[5:].strip()
+        if not json_str:
+            continue
+        try:
+            obj = json.loads(json_str)
+        except Exception:
+            continue
+        b64 = obj.get("data")
+        if isinstance(b64, str) and b64:
+            try:
+                audio.extend(base64.b64decode(b64))
+            except Exception:
+                continue
+    return bytes(audio) if audio else None
 
 
 def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
-    """Call Volcengine TTS; return path to cached audio file or None."""
+    """Call Volcengine TTS V3 SSE; return path to cached mp3 or None."""
     tts = normalize_tts({"tts": dict(tts or {})})
     text = (text or "").strip()
     if not text:
         return None
     if not tts_configured(tts):
-        log.info("tts skipped: disabled or missing appid/token")
+        log.info("tts skipped: disabled or missing api_key/speaker")
         return None
-    # API limit ~1024 bytes; keep short
+    # Keep payload modest
     if len(text.encode("utf-8")) > 900:
         text = text[:200] + "…"
 
@@ -89,24 +141,14 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
         return path
 
     body = {
-        "app": {
-            "appid": tts["appid"],
-            "token": "access_token",
-            "cluster": tts["cluster"],
-        },
         "user": {"uid": "studyonpc"},
-        "audio": {
-            "voice_type": tts["voice_type"],
-            "encoding": tts.get("encoding") or "mp3",
-            "speed_ratio": float(tts.get("speed_ratio") or 1.0),
-            "volume_ratio": 1.0,
-            "pitch_ratio": 1.0,
-        },
-        "request": {
-            "reqid": str(uuid.uuid4()),
+        "req_params": {
             "text": text,
-            "text_type": "plain",
-            "operation": "query",
+            "speaker": tts["speaker"],
+            "audio_params": {
+                "format": tts.get("encoding") or "mp3",
+                "sample_rate": int(tts.get("sample_rate") or 24000),
+            },
         },
     }
     data = json.dumps(body).encode("utf-8")
@@ -115,13 +157,15 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
         data=data,
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer;{tts['token']}",
+            "X-Api-Key": tts["api_key"],
+            "X-Api-Resource-Id": tts["resource_id"],
+            "X-Api-Request-Id": str(uuid.uuid4()),
         },
         method="POST",
     )
     try:
         with request.urlopen(req, timeout=20) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
+            payload = resp.read()
     except error.HTTPError as e:
         try:
             detail = e.read().decode("utf-8", errors="replace")
@@ -133,14 +177,10 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
         log.warning("tts request failed: %s", e)
         return None
 
-    b64 = payload.get("data")
-    if not b64:
-        log.warning("tts no data: %s", str(payload)[:300])
-        return None
-    try:
-        audio = base64.b64decode(b64)
-    except Exception as e:
-        log.warning("tts b64 decode: %s", e)
+    audio = _parse_sse_audio(payload)
+    if not audio:
+        preview = payload[:300].decode("utf-8", errors="replace") if payload else ""
+        log.warning("tts no audio from SSE: %s", preview)
         return None
     path.write_bytes(audio)
     return path
@@ -154,7 +194,6 @@ def play_file(path: Path) -> None:
     def _run() -> None:
         try:
             if os.name == "nt":
-                # MediaPlayer supports mp3/wav
                 uri = path.resolve().as_uri()
                 ps = (
                     "Add-Type -AssemblyName presentationCore; "
@@ -172,7 +211,11 @@ def play_file(path: Path) -> None:
                     timeout=60,
                 )
             else:
-                for cmd in (("ffplay", "-nodisp", "-autoexit", str(path)), ("mpg123", str(path)), ("afplay", str(path))):
+                for cmd in (
+                    ("ffplay", "-nodisp", "-autoexit", str(path)),
+                    ("mpg123", str(path)),
+                    ("afplay", str(path)),
+                ):
                     try:
                         subprocess.run(list(cmd), capture_output=True, timeout=60)
                         break
@@ -184,29 +227,64 @@ def play_file(path: Path) -> None:
     threading.Thread(target=_run, daemon=True).start()
 
 
+def _system_speak(text: str) -> bool:
+    """Windows SAPI fallback when V3 fails and system_fallback is on."""
+    text = (text or "").strip()
+    if not text or os.name != "nt":
+        return False
+
+    def _run() -> None:
+        try:
+            # Escape for PowerShell single-quoted string
+            safe = text.replace("'", "''")
+            ps = (
+                "Add-Type -AssemblyName System.Speech; "
+                "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+                "$s.Rate=-1; "
+                f"$s.Speak('{safe}')"
+            )
+            subprocess.run(
+                ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps],
+                capture_output=True,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                timeout=60,
+            )
+        except Exception as e:
+            log.warning("system tts failed: %s", e)
+
+    threading.Thread(target=_run, daemon=True).start()
+    return True
+
+
 def speak(text: str, tts: dict[str, Any] | None = None) -> bool:
     path = synthesize(text, tts)
-    if not path:
-        return False
-    play_file(path)
-    return True
+    if path:
+        play_file(path)
+        return True
+    tts_n = normalize_tts({"tts": dict(tts or {})})
+    if tts_n.get("system_fallback") and tts_n.get("enabled"):
+        return _system_speak(text)
+    return False
 
 
 def public_tts_view(tts: dict[str, Any]) -> dict[str, Any]:
     """Config view for admin UI — mask secrets."""
-    t = dict(tts or {})
-    token = str(t.get("token") or "")
-    appid = str(t.get("appid") or "")
+    t = normalize_tts({"tts": dict(tts or {})})
+    key = str(t.get("api_key") or "")
+    masked = ""
+    if key:
+        masked = ("*" * min(8, max(0, len(key) - 4))) + key[-4:] if len(key) >= 4 else ("*" * len(key))
     return {
         "enabled": bool(t.get("enabled")),
         "provider": t.get("provider") or "volcengine",
-        "appid": appid,
-        "appid_set": bool(appid),
-        "token_set": bool(token),
-        "token_masked": ("*" * min(8, len(token))) if token else "",
-        "cluster": t.get("cluster") or "volcano_tts",
-        "voice_type": t.get("voice_type") or "BV001_streaming",
-        "api_url": t.get("api_url") or DEFAULT_TTS["api_url"],
+        "api_key_set": bool(key),
+        "api_key_masked": masked,
+        "speaker": t.get("speaker") or DEFAULT_SPEAKER,
+        "resource_id": t.get("resource_id") or DEFAULT_RESOURCE_ID,
+        "api_url": t.get("api_url") or DEFAULT_API_URL,
         "encoding": t.get("encoding") or "mp3",
-        "speed_ratio": t.get("speed_ratio") or 1.0,
+        "sample_rate": t.get("sample_rate") or 24000,
+        "system_fallback": bool(t.get("system_fallback", True)),
+        # migration hint for old admin caches
+        "legacy_v1_ignored": True,
     }
