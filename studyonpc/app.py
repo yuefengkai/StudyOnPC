@@ -456,6 +456,7 @@ class StudyApp:
             on_parent_quit=self._authorized_stop,
             site_id=site_id,
             speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
+            tts_config=self.cfg.get("tts") or {},
         )
         runner.start()
 
@@ -475,6 +476,7 @@ class StudyApp:
                 on_parent_quit=self._authorized_stop,
                 site_id=site_id,
                 speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
+                tts_config=self.cfg.get("tts") or {},
             )
             runner.start()
             return

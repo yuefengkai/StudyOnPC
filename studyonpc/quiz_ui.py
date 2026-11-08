@@ -16,6 +16,8 @@ from . import bank as bank_mod
 from . import pinyin_ui as pyui
 from . import rules as rules_mod
 from .paths import ANSWER_LOG
+from .quiz_voice import QuizVoice
+from . import tts as tts_mod
 
 log = logging.getLogger("studyonpc.quiz_ui")
 
@@ -68,6 +70,7 @@ class QuizSetRunner:
         on_parent_quit: Callable[[], None],
         site_id: str | None = None,
         speak_fn: Callable[[str], None] | None = None,
+        tts_config: dict[str, Any] | None = None,
     ):
         self.root = root
         self.questions = questions
@@ -78,6 +81,10 @@ class QuizSetRunner:
         self.on_parent_quit = on_parent_quit
         self.site_id = site_id
         self.speak_fn = speak_fn
+        self.tts_config = dict(tts_config or {})
+        self._voice = None
+        self._voice_timer = None
+        self._voice_label = None
         self.set_qs: list[dict[str, Any]] = []
         self.idx = 0
         self.correct_count = 0
@@ -130,28 +137,67 @@ class QuizSetRunner:
         self.idx = 0
         self.correct_count = 0
         log.info("quiz set start n=%d pending_extra=%s", n, self.state.get("pending_extra"))
+        if tts_mod.tts_configured(self.tts_config):
+            self._voice = QuizVoice(self.tts_config, self.set_qs)
         self._show_current()
+        self._poll_voice()
 
 
     def _on_speak(self) -> None:
-        if not self.speak_fn:
+        if self._answered:
+            return
+        if self._voice:
+            self._voice.request_play()
+        elif self._voice_label is not None:
+            self._voice_label.configure(text="语音未配置，可继续答题")
+
+    def _poll_voice(self):
+        if self._voice is None or self._voice.closed:
+            return
+        if self._voice_label is not None:
+            self._voice_label.configure(text=self._voice.poll())
+        self._voice_timer = self.root.after(60, self._poll_voice)
+
+    def _close_voice(self):
+        if self._voice is not None:
+            self._voice.close()
+        if self._voice_timer is not None:
             try:
-                messagebox.showinfo("听一听", "语音朗读未开启。请在管理页打开 TTS，并填写火山引擎 api_key 与 speaker（V3）。", parent=self._win or self.root)
+                self.root.after_cancel(self._voice_timer)
             except Exception:
                 pass
-            return
-        q = self._active_q or (self.set_qs[self.idx] if self.set_qs and self.idx < len(self.set_qs) else None)
-        if not q:
-            return
-        parts = [str(q.get("q") or "")]
-        choices = q.get("choices") or []
-        if choices:
-            parts.append("选项：" + "，".join(str(c) for c in choices[:4]))
-        text = "。".join(p for p in parts if p)
-        try:
-            self.speak_fn(text)
-        except Exception as e:
-            log.warning("speak failed: %s", e)
+            self._voice_timer = None
+
+    def _bind_question_voice(self):
+        # Child Enter events bubble into one logical region. No Motion binding,
+        # no widget recreation/recolor on hover, and no bindings on answer controls.
+        def enter(_event):
+            if self._voice is not None and not self._answered:
+                self._voice.hover_enter()
+
+        def check_leave():
+            if self._voice is None or self._voice.closed:
+                return
+            try:
+                host = self._q_host
+                x, y = host.winfo_pointerxy()
+                inside = (host.winfo_rootx() <= x < host.winfo_rootx() + host.winfo_width()
+                          and host.winfo_rooty() <= y < host.winfo_rooty() + host.winfo_height())
+                if not inside:
+                    self._voice.hover_leave()
+            except Exception:
+                pass
+
+        def leave(_event):
+            self.root.after(40, check_leave)
+
+        def bind_children(widget):
+            widget.bind("<Enter>", enter)
+            widget.bind("<Leave>", leave)
+            for child in widget.winfo_children():
+                bind_children(child)
+
+        bind_children(self._q_host)
 
     def _harden(self, win: tk.Toplevel) -> None:
         win.protocol("WM_DELETE_WINDOW", lambda: None)
@@ -203,9 +249,11 @@ class QuizSetRunner:
         if pin.strip() != self.parent_pin:
             messagebox.showerror("错误", "PIN 不对。小朋友请继续答题～", parent=self.root)
             return
+        self._close_voice()
         self.on_parent_quit()
 
     def _close_win(self) -> None:
+        self._close_voice()
         self._gate_token += 1
         if self._win is not None:
             try:
@@ -407,6 +455,11 @@ class QuizSetRunner:
             command=self._on_speak,
         )
         self._speak_btn.pack()
+        self._voice_label = tk.Label(speak_row, text="", bg=CARD_BG,
+                                     fg="#546E7A", font=pyui.preferred_font(11))
+        self._voice_label.pack()
+        self._win.bind("<Destroy>", lambda e: self._close_voice()
+                       if e.widget is self._win else None, add="+")
 
         # Fixed 2x2 option grid — widgets stay forever
         self._btn_frame = tk.Frame(body, bg=CARD_BG)
@@ -774,6 +827,10 @@ class QuizSetRunner:
         else:
             self._prep_single(q, theme)
 
+        self._bind_question_voice()
+        if self._voice is not None:
+            self._voice.show(self.idx)
+
         try:
             win.focus_force()
             win.lift()
@@ -954,6 +1011,8 @@ class QuizSetRunner:
         if self._answered:
             return
         self._answered = True
+        if self._voice is not None:
+            self._voice.stop()
         # Freeze controls in place (no destroy)
         self._gate_token += 1
         for b in self._choice_btns:
@@ -986,6 +1045,7 @@ class QuizSetRunner:
             win.after(750, self._show_current)
 
     def _finish_set(self) -> None:
+        self._close_voice()
         n = len(self.set_qs)
         passed = rules_mod.passed_set(self.correct_count, n, self.rules)
         grant = 0.0
