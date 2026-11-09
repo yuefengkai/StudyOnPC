@@ -8,11 +8,11 @@
 
 ## 界面预览
 
-全屏答题界面（带拼音标注 + 插图），答对够题数才解锁观看时长：
+全屏答题界面（童趣配色 + 拼音标注 + 插图 +「听一听」），答对够题数才解锁观看时长：
 
-![数学加减插图题](docs/screenshots/quiz-math.png)
+![数学图形插图题](docs/screenshots/quiz-math.png)
 
-*数学 · 5 以内加减（插图题）*
+*数学 · 认识图形（插图题）*
 
 ![英语动物单元插图题](docs/screenshots/quiz-animals.png)
 
@@ -22,10 +22,24 @@
 
 *语文 · 口耳目手足（插图题）*
 
+家长管理页（同一 WiFi 打开 `http://电脑IP:8099/admin`）：登录后可查看用量统计图表，以及并排显示「错选 / 正解」的错题本。
+
+![家长管理登录](docs/screenshots/admin-login.png)
+
+*管理页登录*
+
+![用量统计图表](docs/screenshots/admin-stats.png)
+
+*统计 · 观看时长、正确率、科目与加时（按月）*
+
+![错题本错选与正解](docs/screenshots/admin-wrongbook.png)
+
+*错题本 · 并排显示错选和正解*
+
 ## 多站点与语音（v1）
 
 - **多站点 `sites[]`**：共享解锁余额；每个站点独立关键词、每组解锁分钟、每日上限、题数与及格线。旧配置的 `youtube_keywords` 会自动迁移成一个 YouTube 站点。
-- **家长管理页** `/admin`：可编辑站点、规则、题库；「今日加时」增加共享余额并抬高今日有效上限；看满每日上限后可「大闯关」（固定 5 题，按 pass_ratio 约需对 4 题，过关加时 10 分钟）；可开关火山引擎 TTS。
+- **家长管理页** `/admin`：可编辑站点、规则、题库；「今日加时」增加共享余额并抬高今日有效上限；看满每日上限后可「大闯关」（固定 5 题，按 pass_ratio 约需对 4 题，过关加时 10 分钟）；日/周/月统计图表；错题本并排列出错选与正解，未掌握题会优先重练；可开关火山引擎 TTS。
 - **答题页「听一听」**：调用火山 / 字节跳动 openspeech **TTS V3 SSE**（`api_key` 只写在本地 `config.json`，示例见 `config.example.json`）。与 [CaptainChen](https://github.com/yuefengkai/CaptainChen) 同源协议。
 - 答题界面更童趣：更亮的配色、贴纸装饰、更大的选项按钮。
 
@@ -57,7 +71,7 @@ cd C:\path\to\StudyOnPC
 
 > onefile 启动时会解压到临时目录，冷启动比 onedir 稍慢；日常使用仍只需分发这一个 exe。
 
-家长管理页（同一 WiFi）：`http://电脑IP:8099/` 与 `/admin`（卡片仪表盘、规则、题库、强制出题、答题记录）。
+家长管理页（同一 WiFi）：`http://电脑IP:8099/` 与 `/admin`（卡片仪表盘、规则、题库、统计图表、错题本、强制出题、答题记录）。
 
 
 ## 家长必读
