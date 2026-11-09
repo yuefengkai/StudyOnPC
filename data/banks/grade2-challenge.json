@@ -1,0 +1,2159 @@
+{
+  "name": "大闯关（100以内混合加减与时间）",
+  "version": 2,
+  "grade": 2,
+  "source": "家庭原创练习，非教材原题；100以内混合加减、应用题、认识时间与计量",
+  "questions": [
+    {
+      "id": 1,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "36 + 28 = ？",
+      "a": "64",
+      "choices": [
+        "53",
+        "64",
+        "52",
+        "82"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "47 + 35 = ？",
+      "a": "82",
+      "choices": [
+        "81",
+        "89",
+        "72",
+        "82"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "58 + 26 = ？",
+      "a": "84",
+      "choices": [
+        "65",
+        "84",
+        "74",
+        "75"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "69 + 17 = ？",
+      "a": "86",
+      "choices": [
+        "69",
+        "97",
+        "70",
+        "86"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "45 + 38 = ？",
+      "a": "83",
+      "choices": [
+        "93",
+        "98",
+        "73",
+        "83"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "27 + 46 = ？",
+      "a": "73",
+      "choices": [
+        "73",
+        "70",
+        "87",
+        "80"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "39 + 55 = ？",
+      "a": "94",
+      "choices": [
+        "104",
+        "77",
+        "102",
+        "94"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "64 + 19 = ？",
+      "a": "83",
+      "choices": [
+        "101",
+        "71",
+        "83",
+        "77"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "73 + 18 = ？",
+      "a": "91",
+      "choices": [
+        "91",
+        "74",
+        "103",
+        "110"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "82 + 9 = ？",
+      "a": "91",
+      "choices": [
+        "96",
+        "73",
+        "91",
+        "89"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "56 + 27 = ？",
+      "a": "83",
+      "choices": [
+        "96",
+        "83",
+        "80",
+        "102"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 12,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "48 + 36 = ？",
+      "a": "84",
+      "choices": [
+        "84",
+        "103",
+        "104",
+        "69"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "75 + 16 = ？",
+      "a": "91",
+      "choices": [
+        "86",
+        "91",
+        "73",
+        "98"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 14,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "33 + 49 = ？",
+      "a": "82",
+      "choices": [
+        "91",
+        "82",
+        "89",
+        "70"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内加法",
+      "q": "61 + 29 = ？",
+      "a": "90",
+      "choices": [
+        "79",
+        "110",
+        "90",
+        "91"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "90 - 37 = ？",
+      "a": "53",
+      "choices": [
+        "64",
+        "38",
+        "49",
+        "53"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "83 - 46 = ？",
+      "a": "37",
+      "choices": [
+        "25",
+        "45",
+        "37",
+        "51"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 18,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "72 - 28 = ？",
+      "a": "44",
+      "choices": [
+        "48",
+        "44",
+        "31",
+        "29"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "65 - 39 = ？",
+      "a": "26",
+      "choices": [
+        "16",
+        "39",
+        "36",
+        "26"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 20,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "54 - 27 = ？",
+      "a": "27",
+      "choices": [
+        "25",
+        "23",
+        "20",
+        "27"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 21,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "100 - 48 = ？",
+      "a": "52",
+      "choices": [
+        "43",
+        "58",
+        "52",
+        "67"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "91 - 35 = ？",
+      "a": "56",
+      "choices": [
+        "67",
+        "43",
+        "56",
+        "42"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 23,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "80 - 26 = ？",
+      "a": "54",
+      "choices": [
+        "53",
+        "58",
+        "59",
+        "54"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "76 - 49 = ？",
+      "a": "27",
+      "choices": [
+        "34",
+        "19",
+        "27",
+        "28"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "63 - 18 = ？",
+      "a": "45",
+      "choices": [
+        "39",
+        "45",
+        "53",
+        "54"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 26,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "95 - 47 = ？",
+      "a": "48",
+      "choices": [
+        "59",
+        "40",
+        "48",
+        "52"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "84 - 56 = ？",
+      "a": "28",
+      "choices": [
+        "28",
+        "33",
+        "13",
+        "40"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 28,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "70 - 33 = ？",
+      "a": "37",
+      "choices": [
+        "28",
+        "37",
+        "27",
+        "32"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 29,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "58 - 19 = ？",
+      "a": "39",
+      "choices": [
+        "40",
+        "31",
+        "39",
+        "38"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·100以内减法",
+      "q": "42 - 25 = ？",
+      "a": "17",
+      "choices": [
+        "10",
+        "13",
+        "12",
+        "17"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "25 + 18 + 7 = ？",
+      "a": "50",
+      "choices": [
+        "50",
+        "58",
+        "57",
+        "35"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 32,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "46 + 9 + 15 = ？",
+      "a": "70",
+      "choices": [
+        "87",
+        "68",
+        "89",
+        "70"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "80 - 25 - 16 = ？",
+      "a": "39",
+      "choices": [
+        "58",
+        "57",
+        "23",
+        "39"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 34,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "93 - 40 - 18 = ？",
+      "a": "35",
+      "choices": [
+        "24",
+        "35",
+        "54",
+        "38"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 35,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "36 + 28 - 15 = ？",
+      "a": "49",
+      "choices": [
+        "45",
+        "58",
+        "56",
+        "49"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 36,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "70 - 19 + 8 = ？",
+      "a": "59",
+      "choices": [
+        "55",
+        "57",
+        "59",
+        "77"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 37,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "45 + 17 - 22 = ？",
+      "a": "40",
+      "choices": [
+        "40",
+        "55",
+        "33",
+        "60"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 38,
+      "type": "single",
+      "subject": "数学",
+      "unit": "上册·连加连减",
+      "q": "58 - 29 + 11 = ？",
+      "a": "40",
+      "choices": [
+        "34",
+        "53",
+        "57",
+        "40"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 39,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "55 - 40 + 13 = ？",
+      "a": "28",
+      "choices": [
+        "34",
+        "25",
+        "29",
+        "28"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：55 - 40 = 15，再算 15 + 13 = 28。"
+    },
+    {
+      "id": 40,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "20 + 25 - 15 = ？",
+      "a": "30",
+      "choices": [
+        "29",
+        "30",
+        "18",
+        "27"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：20 + 25 = 45，再算 45 - 15 = 30。"
+    },
+    {
+      "id": 41,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "51 - 35 + 32 = ？",
+      "a": "48",
+      "choices": [
+        "48",
+        "59",
+        "50",
+        "36"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：51 - 35 = 16，再算 16 + 32 = 48。"
+    },
+    {
+      "id": 42,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "27 + 25 - 34 = ？",
+      "a": "18",
+      "choices": [
+        "11",
+        "27",
+        "22",
+        "18"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：27 + 25 = 52，再算 52 - 34 = 18。"
+    },
+    {
+      "id": 43,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "78 - 18 + 32 = ？",
+      "a": "92",
+      "choices": [
+        "96",
+        "95",
+        "100",
+        "92"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：78 - 18 = 60，再算 60 + 32 = 92。"
+    },
+    {
+      "id": 44,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "56 + 28 - 19 = ？",
+      "a": "65",
+      "choices": [
+        "76",
+        "55",
+        "65",
+        "74"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：56 + 28 = 84，再算 84 - 19 = 65。"
+    },
+    {
+      "id": 45,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "66 - 21 + 35 = ？",
+      "a": "80",
+      "choices": [
+        "76",
+        "68",
+        "80",
+        "85"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：66 - 21 = 45，再算 45 + 35 = 80。"
+    },
+    {
+      "id": 46,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "40 + 32 - 22 = ？",
+      "a": "50",
+      "choices": [
+        "39",
+        "55",
+        "50",
+        "38"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：40 + 32 = 72，再算 72 - 22 = 50。"
+    },
+    {
+      "id": 47,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "88 - 51 + 21 = ？",
+      "a": "58",
+      "choices": [
+        "50",
+        "58",
+        "56",
+        "63"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：88 - 51 = 37，再算 37 + 21 = 58。"
+    },
+    {
+      "id": 48,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "44 + 24 - 9 = ？",
+      "a": "59",
+      "choices": [
+        "54",
+        "65",
+        "59",
+        "66"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：44 + 24 = 68，再算 68 - 9 = 59。"
+    },
+    {
+      "id": 49,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "87 - 52 + 20 = ？",
+      "a": "55",
+      "choices": [
+        "45",
+        "62",
+        "55",
+        "54"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：87 - 52 = 35，再算 35 + 20 = 55。"
+    },
+    {
+      "id": 50,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "44 + 22 - 54 = ？",
+      "a": "12",
+      "choices": [
+        "15",
+        "19",
+        "9",
+        "12"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：44 + 22 = 66，再算 66 - 54 = 12。"
+    },
+    {
+      "id": 51,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "80 - 22 + 29 = ？",
+      "a": "87",
+      "choices": [
+        "89",
+        "97",
+        "82",
+        "87"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：80 - 22 = 58，再算 58 + 29 = 87。"
+    },
+    {
+      "id": 52,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "19 + 24 - 9 = ？",
+      "a": "34",
+      "choices": [
+        "29",
+        "34",
+        "42",
+        "22"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：19 + 24 = 43，再算 43 - 9 = 34。"
+    },
+    {
+      "id": 53,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "55 - 41 + 12 = ？",
+      "a": "26",
+      "choices": [
+        "28",
+        "21",
+        "26",
+        "38"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：55 - 41 = 14，再算 14 + 12 = 26。"
+    },
+    {
+      "id": 54,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "54 + 35 - 43 = ？",
+      "a": "46",
+      "choices": [
+        "46",
+        "36",
+        "54",
+        "35"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：54 + 35 = 89，再算 89 - 43 = 46。"
+    },
+    {
+      "id": 55,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "77 - 69 + 9 = ？",
+      "a": "17",
+      "choices": [
+        "17",
+        "7",
+        "27",
+        "22"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：77 - 69 = 8，再算 8 + 9 = 17。"
+    },
+    {
+      "id": 56,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "16 + 29 - 27 = ？",
+      "a": "18",
+      "choices": [
+        "6",
+        "24",
+        "18",
+        "14"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：16 + 29 = 45，再算 45 - 27 = 18。"
+    },
+    {
+      "id": 57,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "38 - 28 + 6 = ？",
+      "a": "16",
+      "choices": [
+        "15",
+        "16",
+        "17",
+        "24"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：38 - 28 = 10，再算 10 + 6 = 16。"
+    },
+    {
+      "id": 58,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "48 + 33 - 47 = ？",
+      "a": "34",
+      "choices": [
+        "27",
+        "37",
+        "23",
+        "34"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：48 + 33 = 81，再算 81 - 47 = 34。"
+    },
+    {
+      "id": 59,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "71 - 51 + 20 = ？",
+      "a": "40",
+      "choices": [
+        "51",
+        "33",
+        "36",
+        "40"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：71 - 51 = 20，再算 20 + 20 = 40。"
+    },
+    {
+      "id": 60,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "52 + 23 - 52 = ？",
+      "a": "23",
+      "choices": [
+        "32",
+        "22",
+        "26",
+        "23"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：52 + 23 = 75，再算 75 - 52 = 23。"
+    },
+    {
+      "id": 61,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "57 - 34 + 30 = ？",
+      "a": "53",
+      "choices": [
+        "53",
+        "47",
+        "56",
+        "58"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：57 - 34 = 23，再算 23 + 30 = 53。"
+    },
+    {
+      "id": 62,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "52 + 32 - 56 = ？",
+      "a": "28",
+      "choices": [
+        "21",
+        "30",
+        "20",
+        "28"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：52 + 32 = 84，再算 84 - 56 = 28。"
+    },
+    {
+      "id": 63,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "41 - 14 + 9 = ？",
+      "a": "36",
+      "choices": [
+        "26",
+        "46",
+        "31",
+        "36"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：41 - 14 = 27，再算 27 + 9 = 36。"
+    },
+    {
+      "id": 64,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "20 + 19 - 32 = ？",
+      "a": "7",
+      "choices": [
+        "14",
+        "19",
+        "17",
+        "7"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：20 + 19 = 39，再算 39 - 32 = 7。"
+    },
+    {
+      "id": 65,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "43 - 25 + 9 = ？",
+      "a": "27",
+      "choices": [
+        "34",
+        "27",
+        "37",
+        "23"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：43 - 25 = 18，再算 18 + 9 = 27。"
+    },
+    {
+      "id": 66,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "41 + 19 - 54 = ？",
+      "a": "6",
+      "choices": [
+        "16",
+        "15",
+        "6",
+        "11"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：41 + 19 = 60，再算 60 - 54 = 6。"
+    },
+    {
+      "id": 67,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "45 - 31 + 10 = ？",
+      "a": "24",
+      "choices": [
+        "23",
+        "14",
+        "24",
+        "31"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：45 - 31 = 14，再算 14 + 10 = 24。"
+    },
+    {
+      "id": 68,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "55 + 15 - 35 = ？",
+      "a": "35",
+      "choices": [
+        "32",
+        "46",
+        "34",
+        "35"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：55 + 15 = 70，再算 70 - 35 = 35。"
+    },
+    {
+      "id": 69,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "85 - 61 + 23 = ？",
+      "a": "47",
+      "choices": [
+        "48",
+        "47",
+        "56",
+        "35"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：85 - 61 = 24，再算 24 + 23 = 47。"
+    },
+    {
+      "id": 70,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "33 + 19 - 10 = ？",
+      "a": "42",
+      "choices": [
+        "35",
+        "48",
+        "42",
+        "30"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：33 + 19 = 52，再算 52 - 10 = 42。"
+    },
+    {
+      "id": 71,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "75 - 63 + 16 = ？",
+      "a": "28",
+      "choices": [
+        "28",
+        "19",
+        "27",
+        "16"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：75 - 63 = 12，再算 12 + 16 = 28。"
+    },
+    {
+      "id": 72,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "56 + 32 - 74 = ？",
+      "a": "14",
+      "choices": [
+        "18",
+        "14",
+        "10",
+        "16"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：56 + 32 = 88，再算 88 - 74 = 14。"
+    },
+    {
+      "id": 73,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "82 - 12 + 15 = ？",
+      "a": "85",
+      "choices": [
+        "74",
+        "89",
+        "85",
+        "92"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：82 - 12 = 70，再算 70 + 15 = 85。"
+    },
+    {
+      "id": 74,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "35 + 28 - 35 = ？",
+      "a": "28",
+      "choices": [
+        "31",
+        "19",
+        "32",
+        "28"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：35 + 28 = 63，再算 63 - 35 = 28。"
+    },
+    {
+      "id": 75,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "58 - 42 + 23 = ？",
+      "a": "39",
+      "choices": [
+        "39",
+        "38",
+        "34",
+        "46"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：58 - 42 = 16，再算 16 + 23 = 39。"
+    },
+    {
+      "id": 76,
+      "type": "single",
+      "subject": "数学",
+      "unit": "应用题",
+      "q": "小明有 45 支铅笔，又买了 28 支，现在一共有多少支？",
+      "a": "73",
+      "choices": [
+        "75",
+        "65",
+        "63",
+        "73"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 77,
+      "type": "single",
+      "subject": "数学",
+      "unit": "应用题",
+      "q": "书架上有 80 本书，借走 36 本，还剩多少本？",
+      "a": "44",
+      "choices": [
+        "54",
+        "44",
+        "34",
+        "46"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 78,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "23 + 29 - 32 = ？",
+      "a": "20",
+      "choices": [
+        "31",
+        "20",
+        "26",
+        "22"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：23 + 29 = 52，再算 52 - 32 = 20。"
+    },
+    {
+      "id": 79,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "36 - 18 + 26 = ？",
+      "a": "44",
+      "choices": [
+        "41",
+        "44",
+        "51",
+        "54"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：36 - 18 = 18，再算 18 + 26 = 44。"
+    },
+    {
+      "id": 80,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "18 + 28 - 39 = ？",
+      "a": "7",
+      "choices": [
+        "7",
+        "17",
+        "14",
+        "18"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：18 + 28 = 46，再算 46 - 39 = 7。"
+    },
+    {
+      "id": 81,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "43 - 15 + 11 = ？",
+      "a": "39",
+      "choices": [
+        "39",
+        "36",
+        "34",
+        "27"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：43 - 15 = 28，再算 28 + 11 = 39。"
+    },
+    {
+      "id": 82,
+      "type": "single",
+      "subject": "数学",
+      "unit": "应用题",
+      "q": "教室有 48 人，男生 25 人，女生有多少人？",
+      "a": "23",
+      "choices": [
+        "13",
+        "23",
+        "22",
+        "33"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 83,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "22 + 33 - 19 = ？",
+      "a": "36",
+      "choices": [
+        "27",
+        "45",
+        "31",
+        "36"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：22 + 33 = 55，再算 55 - 19 = 36。"
+    },
+    {
+      "id": 84,
+      "type": "single",
+      "subject": "数学",
+      "unit": "应用题",
+      "q": "跳绳 35 下，再跳 27 下，一共跳了多少下？",
+      "a": "62",
+      "choices": [
+        "72",
+        "58",
+        "62",
+        "52"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 85,
+      "type": "single",
+      "subject": "数学",
+      "unit": "应用题",
+      "q": "一根绳子长 90 厘米，剪去 45 厘米，还剩多少厘米？",
+      "a": "45",
+      "choices": [
+        "40",
+        "45",
+        "35",
+        "55"
+      ],
+      "difficulty": 3,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 86,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "时针指向 3，分针指向 12，是几点？",
+      "a": "3 时",
+      "choices": [
+        "12 时",
+        "3 时 12 分",
+        "6 时",
+        "3 时"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 87,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "时针刚过 8，分针指向 6，是几点？",
+      "a": "8 时 30 分",
+      "choices": [
+        "9 时 30 分",
+        "8 时 30 分",
+        "6 时 8 分",
+        "8 时"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 88,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "从上午 9 时到上午 11 时，过了几小时？",
+      "a": "2 小时",
+      "choices": [
+        "20 小时",
+        "1 小时",
+        "2 小时",
+        "3 小时"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 89,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "1 小时 = 多少分钟？",
+      "a": "60",
+      "choices": [
+        "100",
+        "60",
+        "30",
+        "24"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 90,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "半小时是多少分钟？",
+      "a": "30",
+      "choices": [
+        "15",
+        "45",
+        "60",
+        "30"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 91,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "钟面上分针从 12 走到 3，过了多少分钟？",
+      "a": "15",
+      "choices": [
+        "30",
+        "15",
+        "45",
+        "3"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 92,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "时针指向 5，分针指向 3，是几点？",
+      "a": "5 时 15 分",
+      "choices": [
+        "5 时 15 分",
+        "15 时 5 分",
+        "5 时 3 分",
+        "3 时 5 分"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 93,
+      "type": "single",
+      "subject": "数学",
+      "unit": "认识时间",
+      "q": "一天有多少小时？",
+      "a": "24",
+      "choices": [
+        "60",
+        "7",
+        "24",
+        "12"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 94,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "41 - 22 + 13 = 33",
+      "a": "错误",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：41 - 22 = 19，再算 19 + 13 = 32。"
+    },
+    {
+      "id": 95,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "54 + 29 - 22 = 62",
+      "a": "错误",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：54 + 29 = 83，再算 83 - 22 = 61。"
+    },
+    {
+      "id": 96,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "45 - 16 + 18 = 47",
+      "a": "正确",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：45 - 16 = 29，再算 29 + 18 = 47。"
+    },
+    {
+      "id": 97,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "判断",
+      "q": "100 - 37 = 73",
+      "a": "错误",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 98,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "判断",
+      "q": "45 + 28 = 73",
+      "a": "正确",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 99,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "58 + 22 - 20 = 61",
+      "a": "错误",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：58 + 22 = 80，再算 80 - 20 = 60。"
+    },
+    {
+      "id": 100,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "判断",
+      "q": "1 米 = 100 厘米",
+      "a": "正确",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 101,
+      "type": "boolean",
+      "subject": "数学",
+      "unit": "判断",
+      "q": "半小时等于 50 分钟",
+      "a": "错误",
+      "choices": [
+        "正确",
+        "错误"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 102,
+      "type": "single",
+      "subject": "数学",
+      "unit": "数与计量",
+      "q": "1 米 = ？厘米",
+      "a": "100",
+      "choices": [
+        "100",
+        "1000",
+        "10",
+        "50"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 103,
+      "type": "single",
+      "subject": "数学",
+      "unit": "数与计量",
+      "q": "80 厘米比 1 米（ ）",
+      "a": "短",
+      "choices": [
+        "无法比较",
+        "一样长",
+        "长",
+        "短"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 104,
+      "type": "single",
+      "subject": "数学",
+      "unit": "100以内混合加减",
+      "q": "81 - 18 + 8 = ？",
+      "a": "71",
+      "choices": [
+        "65",
+        "80",
+        "73",
+        "71"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ],
+      "explanation": "从左往右算：81 - 18 = 63，再算 63 + 8 = 71。"
+    },
+    {
+      "id": 105,
+      "type": "single",
+      "subject": "数学",
+      "unit": "数与计量",
+      "q": "比 69 大 1 的数是",
+      "a": "70",
+      "choices": [
+        "60",
+        "70",
+        "68",
+        "79"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    },
+    {
+      "id": 106,
+      "type": "single",
+      "subject": "数学",
+      "unit": "数与计量",
+      "q": "最大的两位数是",
+      "a": "99",
+      "choices": [
+        "100",
+        "99",
+        "90",
+        "98"
+      ],
+      "difficulty": 2,
+      "grade": 2,
+      "tags": [
+        "challenge",
+        "grade2"
+      ]
+    }
+  ]
+}

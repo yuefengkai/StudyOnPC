@@ -24,6 +24,7 @@ DEFAULT_STATE: dict[str, Any] = {
     "quiz_active": False,
     "running_since": "",
     "today_unlock_minutes": 0.0,
+    "today_bonus_minutes": 0.0,
     "site_daily_used": {},
 }
 
@@ -68,6 +69,7 @@ def save_state(st: dict[str, Any]) -> None:
             "quiz_active": bool(st.get("quiz_active", False)),
             "running_since": str(st.get("running_since") or ""),
             "today_unlock_minutes": float(st.get("today_unlock_minutes", 0.0)),
+            "today_bonus_minutes": float(st.get("today_bonus_minutes", 0.0)),
             "site_daily_used": dict(st.get("site_daily_used") or {}),
             "updated_at": datetime.now().isoformat(timespec="seconds"),
         }
@@ -81,7 +83,15 @@ def save_state(st: dict[str, Any]) -> None:
 def _rollover_daily(st: dict[str, Any]) -> None:
     today = _today_str()
     if st.get("daily_date") != today:
+        prev = str(st.get("daily_date") or "")
+        if prev:
+            try:
+                from . import usage_stats
+                usage_stats.archive_day_from_state(prev, st)
+            except Exception as e:
+                log.warning("usage archive on rollover: %s", e)
         st["daily_date"] = today
         st["daily_used_minutes"] = 0.0
         st["today_unlock_minutes"] = 0.0
+        st["today_bonus_minutes"] = 0.0
         st["site_daily_used"] = {}

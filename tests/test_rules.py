@@ -12,8 +12,11 @@ sys.path.insert(0, str(ROOT))
 
 from studyonpc.rules import (  # noqa: E402
     RulesConfig,
+    add_bonus_minutes,
     can_watch,
+    challenge_questions,
     consume_watch,
+    grant_challenge_reward,
     grant_unlock,
     needs_quiz,
     passed_set,
@@ -21,6 +24,7 @@ from studyonpc.rules import (  # noqa: E402
     remaining_daily,
     required_correct,
     set_size,
+    should_use_challenge,
     status_snapshot,
 )
 from studyonpc.state import default_state  # noqa: E402
@@ -89,6 +93,54 @@ class TestRules(unittest.TestCase):
         self.assertEqual(snap["balance_minutes"], 8)
         self.assertTrue(snap["can_watch"])
         self.assertFalse(snap["needs_quiz"])
+
+    def test_bonus_allows_watch_past_daily_max(self):
+        """After daily_max is hit, parent 加时 must raise effective cap so watching resumes."""
+        st = default_state()
+        st["daily_used_minutes"] = 60.0
+        st["balance_minutes"] = 0.0
+        self.assertFalse(can_watch(st, self.cfg))
+        self.assertTrue(needs_quiz(st, self.cfg))
+        self.assertAlmostEqual(remaining_daily(st, self.cfg), 0.0)
+
+        added = add_bonus_minutes(st, 10.0)
+        self.assertAlmostEqual(added, 10.0)
+        self.assertAlmostEqual(st["balance_minutes"], 10.0)
+        self.assertAlmostEqual(st["today_bonus_minutes"], 10.0)
+        self.assertAlmostEqual(remaining_daily(st, self.cfg), 10.0)
+        self.assertTrue(can_watch(st, self.cfg))
+        self.assertFalse(needs_quiz(st, self.cfg))
+
+        used = consume_watch(st, self.cfg, 4.0)
+        self.assertAlmostEqual(used, 4.0)
+        self.assertAlmostEqual(st["balance_minutes"], 6.0)
+        self.assertAlmostEqual(st["daily_used_minutes"], 64.0)
+        self.assertAlmostEqual(remaining_daily(st, self.cfg), 6.0)
+
+        snap = status_snapshot(st, self.cfg)
+        self.assertAlmostEqual(snap["today_bonus_minutes"], 10.0)
+        self.assertAlmostEqual(snap["effective_daily_max_minutes"], 70.0)
+
+    def test_challenge_fixed_five_and_bonus_reward(self):
+        """大闯关：固定 5 题；pass_ratio≈2/3 → 需对 4 题；奖励走加时 +10。"""
+        self.assertEqual(challenge_questions({"challenge_questions": 5}), 5)
+        self.assertEqual(required_correct(5, self.cfg), 4)
+        self.assertTrue(passed_set(4, 5, self.cfg))
+        self.assertFalse(passed_set(3, 5, self.cfg))
+
+        st = default_state()
+        st["daily_used_minutes"] = 60.0
+        st["balance_minutes"] = 0.0
+        self.assertTrue(should_use_challenge(st, self.cfg))
+        # Normal grant would be 0 at daily cap
+        self.assertAlmostEqual(grant_unlock(st, self.cfg), 0.0)
+
+        added = grant_challenge_reward(st, 10.0)
+        self.assertAlmostEqual(added, 10.0)
+        self.assertAlmostEqual(st["balance_minutes"], 10.0)
+        self.assertAlmostEqual(st["today_bonus_minutes"], 10.0)
+        self.assertFalse(should_use_challenge(st, self.cfg))
+        self.assertTrue(can_watch(st, self.cfg))
 
 
 if __name__ == "__main__":

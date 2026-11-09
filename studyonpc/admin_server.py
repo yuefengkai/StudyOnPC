@@ -74,6 +74,15 @@ input:focus,textarea:focus,select:focus{outline:2px solid #fcd34d;border-color:#
 .tab.active{background:#fff7ed;border-color:#fdba74;color:#9a3412}
 .bar{height:8px;background:#f3f4f6;border-radius:999px;overflow:hidden;margin-top:10px}
 .bar > i{display:block;height:100%;background:linear-gradient(90deg,#fbbf24,#f97316);border-radius:999px}
+.chart-wrap{width:100%;overflow:auto}
+.chart-wrap svg{display:block;width:100%;height:auto;max-height:260px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:8px;font-size:.8rem;color:var(--muted)}
+.chart-legend span{display:inline-flex;align-items:center;gap:6px}
+.chart-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.hbar{display:grid;grid-template-columns:72px 1fr 48px;gap:8px;align-items:center;margin:6px 0;font-size:.85rem}
+.hbar .track{height:12px;background:#f3f4f6;border-radius:999px;overflow:hidden}
+.hbar .track > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#60a5fa,#2563eb)}
+.hbar .n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 .login-box{max-width:420px;margin:48px auto}
 .footer{margin-top:22px;color:var(--muted);font-size:.8rem;text-align:center}
 """
@@ -118,12 +127,16 @@ async function load(){{
     const bal=Number(j.balance_minutes||0).toFixed(1);
     const used=Number(j.daily_used_minutes||0).toFixed(1);
     const max=Number(j.daily_max_watch_minutes||60);
+    const bonus=Number(j.today_bonus_minutes||0);
+    const eff=Number(j.effective_daily_max_minutes!=null?j.effective_daily_max_minutes:(max+bonus));
     const rem=Number(j.daily_remaining_minutes||0).toFixed(1);
     document.getElementById('bal').textContent=bal;
     document.getElementById('used').textContent=used;
     document.getElementById('remain').textContent=rem;
-    document.getElementById('usedHint').textContent=`上限 ${{max}} 分钟 · ${{j.daily_date||''}}`;
-    const pct=Math.max(0,Math.min(100, max? (Number(used)/max*100):0));
+    document.getElementById('usedHint').textContent=bonus>0
+      ? `上限 ${{max}}+加时${{bonus.toFixed(0)}}=${{eff.toFixed(0)}} 分钟 · ${{j.daily_date||''}}`
+      : `上限 ${{max}} 分钟 · ${{j.daily_date||''}}`;
+    const pct=Math.max(0,Math.min(100, eff? (Number(used)/eff*100):0));
     document.getElementById('usedBar').style.width=pct+'%';
     const pills=[];
     pills.push(`<span class="pill ${{j.needs_quiz?'warn':'ok'}}">${{j.needs_quiz?'需要答题':'可观看'}}</span>`);
@@ -142,12 +155,12 @@ load(); setInterval(load,4000);
 </body></html>
 """
 
-ADMIN_HTML = f"""<!DOCTYPE html>
+ADMIN_HTML = """<!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#f59e0b"/>
 <title>StudyOnPC · 家长管理</title>
-<style>{_CSS}</style>
+<style>__CSS__</style>
 </head><body>
 <div class="wrap">
   <div class="top">
@@ -155,7 +168,7 @@ ADMIN_HTML = f"""<!DOCTYPE html>
       <div class="logo">🔐</div>
       <div>
         <h1>家长管理面板</h1>
-        <div class="sub">规则 · 题库 · 强制出题 · 答题记录</div>
+        <div class="sub">规则 · 题库 · 错题本 · 统计 · 答题记录</div>
       </div>
     </div>
     <div class="nav">
@@ -165,7 +178,7 @@ ADMIN_HTML = f"""<!DOCTYPE html>
 
   <div class="card login-box" id="login">
     <h2>登录</h2>
-    <p class="muted">管理密码默认与家长 PIN 相同，装好请立刻修改。</p>
+    <p class="muted">管理密码默认与家长 PIN 相同，装好请立刻修改。登录后会记住 30 天（Cookie）。</p>
     <label>管理密码</label>
     <input id="pw" type="password" placeholder="输入管理密码" autocomplete="current-password"/>
     <div class="row-actions">
@@ -182,6 +195,8 @@ ADMIN_HTML = f"""<!DOCTYPE html>
       <button class="tab" data-tab="sites" onclick="showTab('sites')">网站站点</button>
       <button class="tab" data-tab="banks" onclick="showTab('banks')">题库管理</button>
       <button class="tab" data-tab="ops" onclick="showTab('ops')">快捷操作</button>
+      <button class="tab" data-tab="stats" onclick="showTab('stats')">统计</button>
+      <button class="tab" data-tab="wrongbook" onclick="showTab('wrongbook')">错题本</button>
       <button class="tab" data-tab="logs" onclick="showTab('logs')">答题记录</button>
     </div>
 
@@ -231,7 +246,7 @@ ADMIN_HTML = f"""<!DOCTYPE html>
         </div>
         <div>
           <label>搜索题干 / 选项 / 单元 / ID</label>
-          <input id="qSearch" placeholder="例如：加法、猴子、book、21" onkeydown="if(event.key==='Enter'){{event.preventDefault();loadQuestions(1);}}"/>
+          <input id="qSearch" placeholder="例如：加法、猴子、book、21" onkeydown="if(event.key==='Enter'){event.preventDefault();loadQuestions(1);}"/>
         </div>
       </div>
       <div class="row-actions">
@@ -251,7 +266,7 @@ ADMIN_HTML = f"""<!DOCTYPE html>
         <h3>导入 JSON 到当前题库</h3>
         <p class="muted">支持题目数组或含 questions 的对象。可合并或覆盖当前题库。</p>
         <label>JSON</label>
-        <textarea id="import" rows="7" placeholder='[{{"q":"1+1=?","a":"2","choices":["1","2","3"],"type":"single","subject":"数学"}}]'></textarea>
+        <textarea id="import" rows="7" placeholder='[{"q":"1+1=?","a":"2","choices":["1","2","3"],"type":"single","subject":"数学"}]'></textarea>
         <div class="row-actions">
           <button class="btn blue" onclick="importActive(false)">覆盖导入</button>
           <button class="btn" onclick="importActive(true)">合并导入</button>
@@ -284,24 +299,75 @@ ADMIN_HTML = f"""<!DOCTYPE html>
 
     <div class="card tabpane" id="tab-ops" style="display:none">
       <h2>快捷操作</h2>
-      <p class="muted">强制出题会立刻全屏弹出一组题（会静音并最小化匹配站点窗口）。</p>
+      <p class="muted">强制出题会立刻全屏弹出一组题（会静音并最小化匹配站点窗口）。看满每日上限后自动进入「大闯关」（固定 5 题，过关加时 10 分钟）。</p>
       <div class="form-grid" style="margin-bottom:12px">
-        <div><label>今日加时（分钟，写入共享余额）</label><input id="bonusMin" type="number" value="10" min="1" step="1"/></div>
+        <div><label>今日加时（分钟：写入余额并抬高今日上限，看满 60 后仍可继续看）</label><input id="bonusMin" type="number" value="10" min="1" step="1"/></div>
       </div>
       <div class="row-actions">
         <button class="btn green" onclick="addBonus()">🎁 今日加时</button>
+        <button class="btn" onclick="forceChallenge()">🏁 大闯关（5题+10分钟）</button>
         <button class="btn" onclick="forceQuiz()">⚡ 立即出题一组</button>
         <button class="btn danger" onclick="doQuit()">退出守护（需 PIN）</button>
       </div>
       <div id="msg-ops" class="toast"></div>
     </div>
 
+
+    <div class="card tabpane" id="tab-stats" style="display:none">
+      <h2>日 / 周 / 月统计</h2>
+      <p class="muted">图表 + 明细：观看时长、正确率、普通/闯关、连对、加时、高峰、科目。今日观看来自实时状态；历史来自 usage_daily 与 answers.log。</p>
+      <div class="row-actions" style="margin-bottom:12px">
+        <button class="tab active" id="statsRangeDay" onclick="setStatsRange('day')">按日</button>
+        <button class="tab" id="statsRangeWeek" onclick="setStatsRange('week')">按周</button>
+        <button class="tab" id="statsRangeMonth" onclick="setStatsRange('month')">按月</button>
+        <input id="statsAnchor" type="date" style="max-width:180px" onchange="loadStats()"/>
+        <button class="btn ghost" onclick="loadStats()">刷新</button>
+      </div>
+      <div class="grid" id="statsCards"></div>
+      <div class="grid" style="margin-top:14px">
+        <div class="card span-6"><h3>观看时长（分钟）</h3><div class="chart-wrap" id="chartWatch">—</div></div>
+        <div class="card span-6"><h3>答题正确率（%）</h3><div class="chart-wrap" id="chartRate">—</div></div>
+        <div class="card span-6"><h3>答题高峰（按小时）</h3><div class="chart-wrap" id="chartPeaks">—</div><div id="statsPeaks" class="chart-legend"></div></div>
+        <div class="card span-6"><h3>科目分布</h3><div id="statsSubjects" class="muted">—</div></div>
+        <div class="card span-6"><h3>普通 / 闯关组数</h3><div class="chart-wrap" id="chartSets">—</div>
+          <div class="chart-legend"><span><i style="background:#2563eb"></i>普通</span><span><i style="background:#f59e0b"></i>闯关</span></div>
+        </div>
+        <div class="card span-6"><h3>加时 / 解锁（分钟）</h3><div class="chart-wrap" id="chartBonus">—</div>
+          <div class="chart-legend"><span><i style="background:#059669"></i>加时</span><span><i style="background:#7c3aed"></i>解锁</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;overflow:auto">
+        <table class="table" id="statsDayTable">
+          <thead><tr><th>日期</th><th>观看(分)</th><th>正确率</th><th>普通组</th><th>闯关组</th><th>加时</th><th>最长连对</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="msg-stats" class="toast"></div>
+    </div>
+    <div class="card tabpane" id="tab-wrongbook" style="display:none">
+      <h2>错题本</h2>
+      <p class="muted">未掌握错题会优先出现在普通解锁题组；连续做对 2 次标记为已掌握。学习闭环靠错题回流，不只是看统计。</p>
+      <div class="row-actions" style="margin-bottom:12px">
+        <button class="tab active" id="wbFilterOpen" onclick="setWrongFilter('open')">未掌握</button>
+        <button class="tab" id="wbFilterAll" onclick="setWrongFilter('all')">全部</button>
+        <button class="btn ghost" onclick="loadWrongBook()">刷新</button>
+        <button class="btn danger" onclick="clearMasteredWrong()">清除已掌握</button>
+      </div>
+      <div class="grid" id="wbCards" style="margin-bottom:12px"></div>
+      <div style="overflow:auto">
+        <table class="table" id="wbTable">
+          <thead><tr><th>科目</th><th>题干</th><th>错选</th><th>正解</th><th>错次</th><th>连对</th><th>最近错</th><th>状态</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="msg-wrongbook" class="toast"></div>
+    </div>
     <div class="card tabpane" id="tab-logs" style="display:none">
       <h2>最近答题</h2>
       <p class="muted">来自本机 answers.log（最多显示最近 80 条）</p>
       <div style="overflow:auto">
         <table class="table" id="logTable">
-          <thead><tr><th>时间</th><th>科目</th><th>结果</th><th>选择</th><th>答案</th></tr></thead>
+          <thead><tr><th>时间</th><th>科目</th><th>题目</th><th>结果</th><th>选择</th><th>答案</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -314,55 +380,90 @@ ADMIN_HTML = f"""<!DOCTYPE html>
   <div class="footer">StudyOnPC · 家庭本地使用 · 勿把管理页暴露到公网</div>
 </div>
 <script>
+const TOKEN_KEY='studyonpc_token';
+function _getCookie(name){
+  const parts=document.cookie.split(';');
+  for(const p of parts){
+    const i=p.indexOf('=');
+    if(i<0) continue;
+    if(p.slice(0,i).trim()===name) return decodeURIComponent(p.slice(i+1));
+  }
+  return '';
+}
+function _setCookie(name,value,days){
+  const max=Math.max(1, days||30)*86400;
+  document.cookie=name+'='+encodeURIComponent(value||'')+'; Path=/; Max-Age='+max+'; SameSite=Lax';
+}
+function _clearCookie(name){ document.cookie=name+'=; Path=/; Max-Age=0; SameSite=Lax'; }
+function saveToken(t){
+  token=t||'';
+  if(token){
+    try{ localStorage.setItem(TOKEN_KEY, token); }catch(e){}
+    _setCookie(TOKEN_KEY, token, 30);
+  } else {
+    try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+    _clearCookie(TOKEN_KEY);
+  }
+}
+function loadToken(){
+  let t='';
+  try{ t=localStorage.getItem(TOKEN_KEY)||''; }catch(e){}
+  if(!t) t=_getCookie(TOKEN_KEY)||'';
+  return t;
+}
 let token='';
+
 const fieldGroups=[
-  {{title:'解锁与题组', items:[
+  {title:'解锁与题组', items:[
     ['unlock_minutes_per_set','每组解锁分钟'],
     ['questions_per_set','每组题数'],
+    ['challenge_questions','大闯关题数'],
+    ['challenge_reward_minutes','大闯关奖励分钟'],
     ['pass_ratio','及格比例（如 0.67）'],
     ['answer_delay_seconds','看题等待秒数'],
-  ]}},
-  {{title:'每日与加练', items:[
+  ]},
+  {title:'每日与加练', items:[
     ['daily_max_watch_minutes','每日上限分钟'],
     ['wrong_streak_to_extra','连错几次加补题'],
     ['extra_questions','每次补题数'],
     ['poll_ms','轮询毫秒'],
-  ]}},
-  {{title:'安全与题库', items:[
+  ]},
+  {title:'安全与题库', items:[
     ['parent_pin','家长 PIN'],
     ['admin_password','管理密码'],
-    ['bank_file','题库路径'],
-  ]}},
+    ['bank_file','普通题库路径'],
+    ['challenge_bank_file','大闯关题库路径'],
+  ]},
 ];
 
 let sitesDraft=[];
-function siteCard(s, idx){{
+function siteCard(s, idx){
   const kw=(s.keywords||[]).join(', ');
-  return `<div class="card" style="margin-bottom:10px;padding:12px" data-idx="${{idx}}">
+  return `<div class="card" style="margin-bottom:10px;padding:12px" data-idx="${idx}">
     <div class="form-grid">
-      <div><label>ID</label><input data-k="id" value="${{s.id||''}}"/></div>
-      <div><label>名称</label><input data-k="name" value="${{s.name||''}}"/></div>
-      <div><label>启用</label><select data-k="enabled"><option value="true" ${{s.enabled!==false?'selected':''}}>是</option><option value="false" ${{s.enabled===false?'selected':''}}>否</option></select></div>
-      <div><label>关键词（逗号分隔）</label><input data-k="keywords" value="${{kw}}"/></div>
-      <div><label>每组解锁分钟</label><input data-k="unlock_minutes_per_set" type="number" value="${{s.unlock_minutes_per_set??10}}"/></div>
-      <div><label>每日上限分钟</label><input data-k="daily_max_minutes" type="number" value="${{s.daily_max_minutes??60}}"/></div>
-      <div><label>每组题数</label><input data-k="questions_per_set" type="number" value="${{s.questions_per_set??3}}"/></div>
-      <div><label>及格比例</label><input data-k="pass_ratio" type="number" step="0.01" value="${{s.pass_ratio??0.6667}}"/></div>
+      <div><label>ID</label><input data-k="id" value="${s.id||''}"/></div>
+      <div><label>名称</label><input data-k="name" value="${s.name||''}"/></div>
+      <div><label>启用</label><select data-k="enabled"><option value="true" ${s.enabled!==false?'selected':''}>是</option><option value="false" ${s.enabled===false?'selected':''}>否</option></select></div>
+      <div><label>关键词（逗号分隔）</label><input data-k="keywords" value="${kw}"/></div>
+      <div><label>每组解锁分钟</label><input data-k="unlock_minutes_per_set" type="number" value="${s.unlock_minutes_per_set??10}"/></div>
+      <div><label>每日上限分钟</label><input data-k="daily_max_minutes" type="number" value="${s.daily_max_minutes??60}"/></div>
+      <div><label>每组题数</label><input data-k="questions_per_set" type="number" value="${s.questions_per_set??3}"/></div>
+      <div><label>及格比例</label><input data-k="pass_ratio" type="number" step="0.01" value="${s.pass_ratio??0.6667}"/></div>
     </div>
-    <div class="row-actions"><button class="btn ghost" onclick="removeSiteRow(${{idx}})">删除此站点</button></div>
+    <div class="row-actions"><button class="btn ghost" onclick="removeSiteRow(${idx})">删除此站点</button></div>
   </div>`;
-}}
-function renderSites(){{
+}
+function renderSites(){
   document.getElementById('sitesEditor').innerHTML = sitesDraft.map((s,i)=>siteCard(s,i)).join('') || '<p class="muted">暂无站点，请添加。</p>';
-}}
-function readSitesFromDom(){{
+}
+function readSitesFromDom(){
   const cards=[...document.querySelectorAll('#sitesEditor [data-idx]')];
-  return cards.map(card=>{{
-    const get=k=>{{
-      const el=card.querySelector(`[data-k="${{k}}"]`);
+  return cards.map(card=>{
+    const get=k=>{
+      const el=card.querySelector(`[data-k="${k}"]`);
       return el?el.value:'';
-    }};
-    return {{
+    };
+    return {
       id: get('id').trim()||('site'+Math.random().toString(16).slice(2,6)),
       name: get('name').trim()||'未命名',
       enabled: get('enabled')==='true',
@@ -371,28 +472,28 @@ function readSitesFromDom(){{
       daily_max_minutes: parseFloat(get('daily_max_minutes')||'60'),
       questions_per_set: parseInt(get('questions_per_set')||'3',10),
       pass_ratio: parseFloat(get('pass_ratio')||'0.6667'),
-    }};
-  }});
-}}
-function addSiteRow(){{
+    };
+  });
+}
+function addSiteRow(){
   sitesDraft=readSitesFromDom();
-  sitesDraft.push({{id:'site'+(sitesDraft.length+1), name:'新站点', enabled:true, keywords:['example'], unlock_minutes_per_set:10, daily_max_minutes:60, questions_per_set:3, pass_ratio:0.6667}});
+  sitesDraft.push({id:'site'+(sitesDraft.length+1), name:'新站点', enabled:true, keywords:['example'], unlock_minutes_per_set:10, daily_max_minutes:60, questions_per_set:3, pass_ratio:0.6667});
   renderSites();
-}}
-function removeSiteRow(idx){{
+}
+function removeSiteRow(idx){
   sitesDraft=readSitesFromDom();
   sitesDraft.splice(idx,1);
   renderSites();
-}}
-async function saveSites(){{
+}
+async function saveSites(){
   const sites=readSitesFromDom();
-  const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify({{sites}})}});
+  const r=await fetch('/api/admin/config',{method:'POST',headers:headers(),body:JSON.stringify({sites})});
   const j=await r.json();
   document.getElementById('msg-sites').innerHTML=r.ok?'<span class="ok">站点已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ sitesDraft=sites; }}
-}}
-async function saveTts(){{
-  const body={{ tts:{{
+  if(r.ok){ sitesDraft=sites; }
+}
+async function saveTts(){
+  const body={ tts:{
     enabled: document.getElementById('tts_enabled').value==='true',
     speaker: document.getElementById('tts_speaker').value.trim()||'zh_male_tiancaitongsheng_uranus_bigtts',
     resource_id: document.getElementById('tts_resource').value.trim()||'seed-tts-1.0',
@@ -401,66 +502,80 @@ async function saveTts(){{
     provider:'volcengine',
     encoding:'mp3',
     sample_rate:24000,
-  }}}};
-  const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify(body)}});
+  }};
+  const r=await fetch('/api/admin/config',{method:'POST',headers:headers(),body:JSON.stringify(body)});
   const j=await r.json();
   document.getElementById('msg-tts').innerHTML=r.ok?'<span class="ok">TTS 已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ document.getElementById('tts_api_key').value=''; loadPanel(); }}
-}}
-async function addBonus(){{
+  if(r.ok){ document.getElementById('tts_api_key').value=''; loadPanel(); }
+}
+async function addBonus(){
   const minutes=parseFloat(document.getElementById('bonusMin').value||'0');
-  const r=await fetch('/api/admin/bonus',{{method:'POST',headers:headers(),body:JSON.stringify({{minutes}})}});
+  const r=await fetch('/api/admin/bonus',{method:'POST',headers:headers(),body:JSON.stringify({minutes})});
   const j=await r.json();
-  document.getElementById('msg-ops').innerHTML=r.ok?('<span class="ok">已加时 '+j.added+' 分钟</span>'):('<span class="err">'+(j.error||'失败')+'</span>');
+  document.getElementById('msg-ops').innerHTML=r.ok?('<span class="ok">已加时 '+j.added+' 分钟（余额+今日上限）</span>'):('<span class="err">'+(j.error||'失败')+'</span>');
   if(r.ok) loadDash();
-}}
+}
 
-function headers(){{return token?{{'Authorization':'Bearer '+token,'Content-Type':'application/json'}}:{{'Content-Type':'application/json'}};}}
-function showTab(name){{
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+function headers(){return token?{'Authorization':'Bearer '+token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
+function showTab(name){
+  document.querySelectorAll('.tab[data-tab]').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.style.display='none');
   document.getElementById('tab-'+name).style.display='block';
   if(name==='logs') loadLogs();
+  if(name==='stats') loadStats();
+  if(name==='wrongbook') loadWrongBook();
   if(name==='banks') loadQuestions(qPage||1);
   if(name==='sites') renderSites();
-}}
-async function doLogin(){{
-  const r=await fetch('/api/login',{{method:'POST',headers:{{'Content-Type':'application/json'}},
-    body:JSON.stringify({{password:document.getElementById('pw').value}})}});
-  const j=await r.json();
-  if(!r.ok){{document.getElementById('loginMsg').textContent=j.error||'失败';return;}}
-  token=j.token; localStorage.setItem('studyonpc_token', token);
-  document.getElementById('login').style.display='none';
-  document.getElementById('panel').style.display='block';
-  loadAdmin(); loadDash(); loadLogs(); loadQuestions(1);
-  setInterval(loadDash, 5000);
-}}
-async function loadDash(){{
-  try{{
+}
+async function doLogin(){
+  const btn=document.querySelector('#login .btn');
+  if(btn){ btn.disabled=true; btn.textContent='登录中…'; }
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:document.getElementById('pw').value})});
+    const j=await r.json();
+    if(!r.ok){document.getElementById('loginMsg').textContent=j.error||'失败';return;}
+    saveToken(j.token);
+    document.getElementById('loginMsg').textContent='';
+    document.getElementById('login').style.display='none';
+    document.getElementById('panel').style.display='block';
+    loadAdmin(); loadDash(); loadLogs(); loadQuestions(1);
+    setInterval(loadDash, 5000);
+  }catch(e){
+    document.getElementById('loginMsg').textContent='网络错误，请重试';
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='进入管理'; }
+  }
+}
+async function loadDash(){
+  try{
     const r=await fetch('/api/status'); const j=await r.json();
     const unlocks=Number(j.today_unlock_minutes||0).toFixed(1);
+    const bonus=Number(j.today_bonus_minutes||0);
+    const max=Number(j.daily_max_watch_minutes||60);
+    const eff=Number(j.effective_daily_max_minutes!=null?j.effective_daily_max_minutes:(max+bonus));
     document.getElementById('dashCards').innerHTML=`
-      <div class="card span-3 stat"><div class="label">余额</div><div class="value">${{Number(j.balance_minutes||0).toFixed(1)}}</div><div class="hint">分钟</div></div>
-      <div class="card span-3 stat"><div class="label">今日已看</div><div class="value">${{Number(j.daily_used_minutes||0).toFixed(1)}}</div><div class="hint">/ ${{j.daily_max_watch_minutes||60}}</div></div>
-      <div class="card span-3 stat"><div class="label">今日解锁累计</div><div class="value">${{unlocks}}</div><div class="hint">答题获得</div></div>
-      <div class="card span-3 stat"><div class="label">状态</div><div class="value" style="font-size:1.2rem;margin-top:12px">${{j.needs_quiz?'需答题':'可观看'}}</div><div class="hint">${{j.quiz_active||j.in_quiz?'答题进行中':'空闲'}}</div></div>`;
-  }}catch(e){{}}
-}}
-async function loadAdmin(){{
-  const r=await fetch('/api/admin/config',{{headers:headers()}});
-  if(r.status===401){{localStorage.removeItem('studyonpc_token'); location.reload();return;}}
+      <div class="card span-3 stat"><div class="label">余额</div><div class="value">${Number(j.balance_minutes||0).toFixed(1)}</div><div class="hint">分钟</div></div>
+      <div class="card span-3 stat"><div class="label">今日已看</div><div class="value">${Number(j.daily_used_minutes||0).toFixed(1)}</div><div class="hint">/ ${eff.toFixed(0)}${bonus>0?`（含加时 ${bonus.toFixed(0)}）`:''}</div></div>
+      <div class="card span-3 stat"><div class="label">今日解锁累计</div><div class="value">${unlocks}</div><div class="hint">答题获得 · 加时 ${bonus.toFixed(1)}</div></div>
+      <div class="card span-3 stat"><div class="label">状态</div><div class="value" style="font-size:1.2rem;margin-top:12px">${j.needs_quiz?'需答题':'可观看'}</div><div class="hint">${j.quiz_active||j.in_quiz?'答题进行中':'空闲'}</div></div>`;
+  }catch(e){}
+}
+async function loadAdmin(){
+  const r=await fetch('/api/admin/config',{headers:headers()});
+  if(r.status===401){localStorage.removeItem('studyonpc_token'); location.reload();return;}
   const j=await r.json();
   let html='';
-  for(const g of fieldGroups){{
-    html+=`<div style="grid-column:1/-1"><h3>${{g.title}}</h3></div>`;
-    for(const [k,label] of g.items){{
-      html+=`<div><label>${{label}}</label><input data-k="${{k}}" value="${{j[k]??''}}"/></div>`;
-    }}
-  }}
+  for(const g of fieldGroups){
+    html+=`<div style="grid-column:1/-1"><h3>${g.title}</h3></div>`;
+    for(const [k,label] of g.items){
+      html+=`<div><label>${label}</label><input data-k="${k}" value="${j[k]??''}"/></div>`;
+    }
+  }
   document.getElementById('rules').innerHTML=html;
   sitesDraft = Array.isArray(j.sites) ? j.sites : [];
   renderSites();
-  const tts = j.tts || {{}};
+  const tts = j.tts || {};
   document.getElementById('tts_enabled').value = tts.enabled ? 'true' : 'false';
   document.getElementById('tts_speaker').value = tts.speaker || 'zh_male_tiancaitongsheng_uranus_bigtts';
   document.getElementById('tts_resource').value = tts.resource_id || 'seed-tts-1.0';
@@ -469,63 +584,254 @@ async function loadAdmin(){{
   document.getElementById('ttsMeta').textContent =
     (tts.api_key_set ? ('api_key 已配置' + (tts.api_key_masked ? ('（'+tts.api_key_masked+'）') : '') + '；') : 'api_key 未配置；') +
     ('speaker=' + (tts.speaker || '') + '；resource_id=' + (tts.resource_id || 'seed-tts-1.0'));
-  const b=await fetch('/api/admin/banks',{{headers:headers()}});
+  const b=await fetch('/api/admin/banks',{headers:headers()});
   const bj=await b.json();
   const banks=bj.banks||[];
   document.getElementById('banks').innerHTML = banks.length? banks.map(x=>`
-    <div class="bank-item"><div><strong>${{x.name}}</strong><div class="muted">${{x.path}}${{x.count!=null?(' · '+x.count+' 题'):''}}</div></div>
-    <span class="pill">${{ (j.bank_file||'').replace(/\\\\/g,'/')===x.path || (j.bank_file||'').endsWith(x.name) ? '当前' : '可选' }}</span>
+    <div class="bank-item"><div><strong>${x.name}</strong><div class="muted">${x.path}${x.count!=null?(' · '+x.count+' 题'):''}</div></div>
+    <span class="pill">${ (j.bank_file||'').replace(/\\\\/g,'/')===x.path || (j.bank_file||'').endsWith(x.name) ? '当前' : '可选' }</span>
   </div>`).join('') : '<div class="muted">暂无题库文件</div>';
-}}
-async function saveRules(){{
-  const body={{}};
-  document.querySelectorAll('#rules input').forEach(el=>{{body[el.dataset.k]=el.value;}});
-  for(const k of ['unlock_minutes_per_set','questions_per_set','pass_ratio','daily_max_watch_minutes','wrong_streak_to_extra','extra_questions','poll_ms','answer_delay_seconds']){{
+}
+async function saveRules(){
+  const body={};
+  document.querySelectorAll('#rules input').forEach(el=>{body[el.dataset.k]=el.value;});
+  for(const k of ['unlock_minutes_per_set','questions_per_set','pass_ratio','daily_max_watch_minutes','challenge_questions','challenge_reward_minutes','wrong_streak_to_extra','extra_questions','poll_ms','answer_delay_seconds']){
     if(body[k]!==undefined && body[k]!=='') body[k]=Number(body[k]);
-  }}
-  const r=await fetch('/api/admin/config',{{method:'POST',headers:headers(),body:JSON.stringify(body)}});
+  }
+  const r=await fetch('/api/admin/config',{method:'POST',headers:headers(),body:JSON.stringify(body)});
   const j=await r.json();
   document.getElementById('msg-rules').innerHTML=r.ok?'<span class="ok">已保存</span>':'<span class="err">'+(j.error||'失败')+'</span>';
   if(r.ok) loadDash();
-}}
-async function doImport(){{
-  const r=await fetch('/api/admin/import',{{method:'POST',headers:headers(),
-    body:JSON.stringify({{filename:document.getElementById('importName').value,json:document.getElementById('import').value}})}});
+}
+async function doImport(){
+  const r=await fetch('/api/admin/import',{method:'POST',headers:headers(),
+    body:JSON.stringify({filename:document.getElementById('importName').value,json:document.getElementById('import').value})});
   const j=await r.json();
   document.getElementById('msg-banks').innerHTML=r.ok?'<span class="ok">已导入 '+j.path+'</span>':'<span class="err">'+(j.error||'失败')+'</span>';
   if(r.ok) loadAdmin();
-}}
-async function forceQuiz(){{
-  const r=await fetch('/api/admin/force_quiz',{{method:'POST',headers:headers(),body:'{{}}'}});
+}
+async function forceQuiz(){
+  const r=await fetch('/api/admin/force_quiz',{method:'POST',headers:headers(),body:'{}'});
   const j=await r.json();
   document.getElementById('msg-ops').innerHTML=r.ok?'<span class="ok">已请求出题</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-}}
-async function doQuit(){{
+}
+async function forceChallenge(){
+  const r=await fetch('/api/admin/force_challenge',{method:'POST',headers:headers(),body:'{}'});
+  const j=await r.json();
+  document.getElementById('msg-ops').innerHTML=r.ok?'<span class="ok">已请求大闯关（5题）</span>':'<span class="err">'+(j.error||'失败')+'</span>';
+}
+async function doQuit(){
   const pin=prompt('输入家长 PIN 退出守护');
   if(pin===null) return;
-  const r=await fetch('/api/admin/quit',{{method:'POST',headers:headers(),body:JSON.stringify({{pin}})}});
+  const r=await fetch('/api/admin/quit',{method:'POST',headers:headers(),body:JSON.stringify({pin})});
   const j=await r.json();
   document.getElementById('msg-ops').innerHTML=r.ok?'<span class="ok">正在退出…</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-}}
-async function loadLogs(){{
-  try{{
-    const r=await fetch('/api/admin/answers',{{headers:headers()}});
+}
+
+let statsRange='day';
+function setStatsRange(r){
+  statsRange=r;
+  ['day','week','month'].forEach(x=>{
+    const el=document.getElementById('statsRange'+x[0].toUpperCase()+x.slice(1));
+    if(el) el.classList.toggle('active', x===r);
+  });
+  loadStats();
+}
+function _escSvg(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function _niceMax(v){
+  v=Math.max(0, Number(v)||0);
+  if(v<=0) return 1;
+  const p=Math.pow(10, Math.floor(Math.log10(v)));
+  const n=v/p;
+  const step=n<=1?1:n<=2?2:n<=5?5:10;
+  return step*p;
+}
+function _barChart(labels, series, opts){
+  opts=opts||{};
+  const W=opts.w||560, H=opts.h||220, padL=36, padR=12, padT=16, padB=42;
+  const colors=opts.colors||['#f59e0b','#2563eb','#059669','#7c3aed'];
+  const stacks=Array.isArray(series[0])?series:[series];
+  const n=labels.length||1;
+  let max=0;
+  for(let i=0;i<n;i++){
+    let s=0; for(const arr of stacks) s+=Number(arr[i]||0); max=Math.max(max,s);
+  }
+  if(opts.max!=null) max=opts.max;
+  max=_niceMax(max);
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const gap=Math.max(4, Math.min(14, iw/(n*3)));
+  const bw=Math.max(6, (iw - gap*(n+1))/n);
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${_escSvg(opts.title||'chart')}">`;
+  for(let g=0;g<=4;g++){
+    const y=padT + ih*(g/4);
+    const val=Math.round(max*(1-g/4)*10)/10;
+    svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e7e2d6" stroke-width="1"/>`;
+    svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="10" fill="#6b7280">${val}</text>`;
+  }
+  for(let i=0;i<n;i++){
+    const x=padL + gap + i*(bw+gap);
+    let yBase=padT+ih;
+    stacks.forEach((arr,si)=>{
+      const v=Math.max(0, Number(arr[i]||0));
+      const h=(v/max)*ih;
+      const y=yBase-h;
+      const color=colors[si%colors.length];
+      if(h>0) svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="${color}"><title>${_escSvg(labels[i])}: ${v}</title></rect>`;
+      yBase=y;
+    });
+    const lab=String(labels[i]||'');
+    const short=lab.length>10?lab.slice(5):lab;
+    svg+=`<text x="${x+bw/2}" y="${H-14}" text-anchor="middle" font-size="10" fill="#6b7280">${_escSvg(short)}</text>`;
+  }
+  svg+='</svg>';
+  return svg;
+}
+function _hourChart(hourMap){
+  const labels=[], vals=[];
+  for(let h=0;h<24;h++){ labels.push(String(h).padStart(2,'0')); vals.push(Number((hourMap||{})[String(h)]||(hourMap||{})[h]||0)); }
+  return _barChart(labels, vals, {colors:['#0ea5e9'], h:200, title:'hourly'});
+}
+function _hbarSubjects(subs){
+  if(!subs||!subs.length) return '<div class="muted">暂无</div>';
+  const max=Math.max(...subs.map(x=>Number(x.total||0)),1);
+  return subs.slice(0,8).map(x=>{
+    const tot=Number(x.total||0), ok=Number(x.ok||0);
+    const pct=max?Math.round(100*tot/max):0;
+    const rate=x.success_rate==null?'—':(x.success_rate+'%');
+    return `<div class="hbar"><div title="${esc(x.subject||'')}">${esc((x.subject||'').slice(0,6))}</div><div class="track"><i style="width:${pct}%"></i></div><div class="n">${tot}</div></div><div class="muted" style="margin:-2px 0 8px 80px;font-size:.78rem">正确 ${ok} · ${rate}</div>`;
+  }).join('');
+}
+async function loadStats(){
+  try{
+    const anchor=document.getElementById('statsAnchor').value||'';
+    const u=new URL('/api/admin/stats', location.origin);
+    u.searchParams.set('range', statsRange);
+    if(anchor) u.searchParams.set('date', anchor);
+    const r=await fetch(u, {headers:headers()});
+    if(r.status===401) return;
+    const j=await r.json();
+    if(!r.ok){ document.getElementById('msg-stats').innerHTML='<span class="err">'+(j.error||'失败')+'</span>'; return; }
+    const sm=j.summary||{};
+    const rate=sm.success_rate==null?'—':(sm.success_rate+'%');
+    document.getElementById('statsCards').innerHTML=`
+      <div class="card span-3 stat"><div class="label">观看时长</div><div class="value">${Number(sm.watch_minutes||0).toFixed(1)}</div><div class="hint">分钟 · ${j.start||''} ~ ${j.end||''}</div></div>
+      <div class="card span-3 stat"><div class="label">答题成功率</div><div class="value">${rate}</div><div class="hint">${sm.answers_ok||0}/${sm.answers_total||0} 题</div></div>
+      <div class="card span-3 stat"><div class="label">普通 / 闯关</div><div class="value" style="font-size:1.4rem">${sm.sets_normal||0} / ${sm.sets_challenge||0}</div><div class="hint">通过 ${sm.sets_passed_normal||0} / ${sm.sets_passed_challenge||0}</div></div>
+      <div class="card span-3 stat"><div class="label">最长连对</div><div class="value">${sm.max_correct_streak||0}</div><div class="hint">加时 ${Number(sm.bonus_minutes||0).toFixed(1)} 分 · 解锁 ${Number(sm.unlock_minutes||0).toFixed(1)}</div></div>`;
+    const days=sm.days||[];
+    const labels=days.map(d=>{
+      const s=String(d.date||'');
+      return s.length>=10?s.slice(5):s;
+    });
+    const watch=days.map(d=>Number(d.watch_minutes||0));
+    const rates=days.map(d=>d.success_rate==null?0:Number(d.success_rate));
+    const normal=days.map(d=>Number(d.sets_normal||0));
+    const chal=days.map(d=>Number(d.sets_challenge||0));
+    const bonus=days.map(d=>Number(d.bonus_minutes||0));
+    const unlock=days.map(d=>Number(d.unlock_minutes||0));
+    document.getElementById('chartWatch').innerHTML = days.length?_barChart(labels, watch, {colors:['#f59e0b'], title:'watch'}):'<div class="muted">暂无</div>';
+    document.getElementById('chartRate').innerHTML = days.length?_barChart(labels, rates, {colors:['#059669'], max:100, title:'rate'}):'<div class="muted">暂无</div>';
+    document.getElementById('chartSets').innerHTML = days.length?_barChart(labels, [normal,chal], {colors:['#2563eb','#f59e0b'], title:'sets'}):'<div class="muted">暂无</div>';
+    document.getElementById('chartBonus').innerHTML = days.length?_barChart(labels, [bonus,unlock], {colors:['#059669','#7c3aed'], title:'bonus'}):'<div class="muted">暂无</div>';
+    document.getElementById('chartPeaks').innerHTML=_hourChart(sm.hour_answers||{});
+    const peaks=sm.peak_hours||[];
+    document.getElementById('statsPeaks').innerHTML=peaks.length
+      ? peaks.map(p=>`<span><b>${String(p.hour).padStart(2,'0')}:00</b> ${p.answers}题</span>`).join('')
+      : '<span>暂无高峰</span>';
+    document.getElementById('statsSubjects').innerHTML=_hbarSubjects(sm.subjects||[]);
+    const tb=document.querySelector('#statsDayTable tbody');
+    if(!days.length){ tb.innerHTML='<tr><td colspan="7" class="muted">暂无数据</td></tr>'; }
+    else {
+      tb.innerHTML=days.map(d=>`<tr>
+        <td>${d.date||''}</td>
+        <td>${Number(d.watch_minutes||0).toFixed(1)}</td>
+        <td>${d.success_rate==null?'—':(d.success_rate+'%')} <span class="muted">(${d.answers_ok||0}/${d.answers_total||0})</span></td>
+        <td>${d.sets_normal||0}</td>
+        <td>${d.sets_challenge||0}</td>
+        <td>${Number(d.bonus_minutes||0).toFixed(1)}</td>
+        <td>${d.max_correct_streak||0}</td>
+      </tr>`).join('');
+    }
+    document.getElementById('msg-stats').textContent='';
+    if(!document.getElementById('statsAnchor').value) document.getElementById('statsAnchor').value=j.anchor||'';
+  }catch(e){ document.getElementById('msg-stats').textContent='读取统计失败'; }
+}
+
+
+let wbFilter='open';
+function setWrongFilter(f){
+  wbFilter=f||'open';
+  document.getElementById('wbFilterOpen').classList.toggle('active', wbFilter==='open');
+  document.getElementById('wbFilterAll').classList.toggle('active', wbFilter==='all');
+  loadWrongBook();
+}
+async function loadWrongBook(){
+  const msg=document.getElementById('msg-wrongbook');
+  try{
+    const u=new URL('/api/admin/wrongbook', location.origin);
+    u.searchParams.set('filter', wbFilter||'open');
+    const r=await fetch(u, {headers:headers()});
+    const j=await r.json();
+    if(!r.ok){ msg.innerHTML='<span class="err">'+(j.error||'加载失败')+'</span>'; return; }
+    const c=j.counts||{};
+    document.getElementById('wbCards').innerHTML=`
+      <div class="card span-4 stat"><div class="label">未掌握</div><div class="value">${c.open||0}</div><div class="hint">优先重练</div></div>
+      <div class="card span-4 stat"><div class="label">已掌握</div><div class="value">${c.mastered||0}</div><div class="hint">连对≥2</div></div>
+      <div class="card span-4 stat"><div class="label">合计</div><div class="value">${c.total||0}</div><div class="hint">历史错题</div></div>`;
+    const tb=document.querySelector('#wbTable tbody');
+    const items=j.items||[];
+    if(!items.length){
+      tb.innerHTML='<tr><td colspan="8" class="muted">暂无错题</td></tr>';
+    } else {
+      tb.innerHTML=items.map(it=>{
+        const st=it.mastered?'<span class="ok">已掌握</span>':'<span class="err">未掌握</span>';
+        return `<tr>
+          <td>${esc(it.subject||'')}</td>
+          <td style="max-width:320px">${esc(it.stem||'')||'<span class="muted">—</span>'}</td>
+          <td><span class="err">${esc(it.last_wrong_choice||'')||'—'}</span></td>
+          <td><span class="ok">${esc(it.correct_answer||'')||'—'}</span></td>
+          <td>${it.wrong_count||0}</td>
+          <td>${it.correct_streak||0}</td>
+          <td>${esc((it.last_wrong_at||'').replace('T',' ').slice(0,19))}</td>
+          <td>${st}</td>
+        </tr>`;
+      }).join('');
+    }
+    msg.innerHTML='';
+  }catch(e){
+    msg.innerHTML='<span class="err">网络错误</span>';
+  }
+}
+async function clearMasteredWrong(){
+  if(!confirm('清除所有「已掌握」错题记录？未掌握的会保留。')) return;
+  const r=await fetch('/api/admin/wrongbook/clear_mastered',{method:'POST',headers:headers(),body:'{}'});
+  const j=await r.json();
+  document.getElementById('msg-wrongbook').innerHTML=r.ok
+    ?('<span class="ok">已清除 '+(j.removed||0)+' 条已掌握</span>')
+    :('<span class="err">'+(j.error||'失败')+'</span>');
+  if(r.ok) loadWrongBook();
+}
+
+async function loadLogs(){
+  try{
+    const r=await fetch('/api/admin/answers',{headers:headers()});
     if(r.status===401) return;
     const j=await r.json();
     const rows=j.lines||[];
     const tb=document.querySelector('#logTable tbody');
-    if(!rows.length){{ tb.innerHTML='<tr><td colspan="5" class="muted">暂无记录</td></tr>'; return; }}
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="6" class="muted">暂无记录</td></tr>'; return; }
     tb.innerHTML=rows.map(x=>`<tr>
-      <td>${{x.time||''}}</td><td>${{x.subject||''}}</td>
-      <td><span class="pill ${{x.ok?'ok':'bad'}}">${{x.ok?'答对':'答错'}}</span></td>
-      <td>${{esc(x.chose||'')}}</td><td>${{esc(x.expect||'')}}</td>
+      <td>${esc(x.time||'')}</td><td>${esc(x.subject||'')}</td>
+      <td style="max-width:320px">${esc(x.q||x.stem||'')||'<span class="muted">—</span>'}</td>
+      <td><span class="pill ${x.ok?'ok':'bad'}">${x.ok?'答对':'答错'}</span></td>
+      <td>${esc(x.chose||'')}</td><td>${esc(x.expect||'')}</td>
     </tr>`).join('');
-  }}catch(e){{ document.getElementById('msg-logs').textContent='读取失败'; }}
-}}
-function esc(s){{return String(s).replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}})[c]);}}
+  }catch(e){ document.getElementById('msg-logs').textContent='读取失败'; }
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
 
 let qPage=1;
-async function loadQuestions(page){{
+async function loadQuestions(page){
   qPage=page||1;
   const subject=document.getElementById('qSubject').value;
   const search=document.getElementById('qSearch').value.trim();
@@ -536,59 +842,59 @@ async function loadQuestions(page){{
   u.searchParams.set('subject', subject || '');
   u.searchParams.set('q', search || '');
   let r;
-  try {{
-    r=await fetch(u.toString(), {{headers:headers()}});
-  }} catch(err) {{
+  try {
+    r=await fetch(u.toString(), {headers:headers()});
+  } catch(err) {
     document.getElementById('bankMeta').textContent='查询失败：网络错误';
     document.getElementById('msg-banks').innerHTML='<span class="err">查询失败：'+esc(String(err))+'</span>';
     return;
-  }}
-  if(r.status===401){{location.reload();return;}}
-  let j={{}};
-  try {{ j=await r.json(); }} catch(err) {{
+  }
+  if(r.status===401){location.reload();return;}
+  let j={};
+  try { j=await r.json(); } catch(err) {
     document.getElementById('bankMeta').textContent='查询失败：无效响应';
     return;
-  }}
-  if(!r.ok){{
+  }
+  if(!r.ok){
     document.getElementById('bankMeta').textContent='查询失败';
     document.getElementById('msg-banks').innerHTML='<span class="err">'+(j.error||('HTTP '+r.status))+'</span>';
     return;
-  }}
+  }
   const filterBits=[];
   if(subject) filterBits.push('科目='+subject);
   if(search) filterBits.push('关键词='+search);
   document.getElementById('bankMeta').textContent =
-    `当前题库 ${{j.bank_file||''}} · 筛选后 ${{j.total||0}} 题 · 第 ${{j.page}}/${{j.pages}} 页` +
+    `当前题库 ${j.bank_file||''} · 筛选后 ${j.total||0} 题 · 第 ${j.page}/${j.pages} 页` +
     (filterBits.length?(' · '+filterBits.join(' · ')):'');
   const sel=document.getElementById('qSubject');
   const cur=subject;
-  sel.innerHTML='<option value="">全部科目</option>'+((j.subjects||[]).map(s=>`<option value="${{esc(s)}}">${{esc(s)}}</option>`).join(''));
+  sel.innerHTML='<option value="">全部科目</option>'+((j.subjects||[]).map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(''));
   sel.value=cur;
   const tb=document.querySelector('#qTable tbody');
   const items=j.items||[];
-  if(!items.length){{
+  if(!items.length){
     tb.innerHTML='<tr><td colspan="7" class="muted">没有匹配的题目'+(search||subject?'（请清空筛选再试）':'')+'</td></tr>';
-  }} else {{
+  } else {
     tb.innerHTML=items.map(it=>`<tr>
-      <td>${{it.id}}</td><td>${{esc(it.subject||'')}}</td><td>${{esc(it.unit||'')}}</td>
-      <td>${{esc(it.q_preview||it.q||'')}}</td>
-      <td>${{it.choices_count||0}}</td>
-      <td>${{it.has_image?'🖼':'—'}}</td>
+      <td>${it.id}</td><td>${esc(it.subject||'')}</td><td>${esc(it.unit||'')}</td>
+      <td>${esc(it.q_preview||it.q||'')}</td>
+      <td>${it.choices_count||0}</td>
+      <td>${it.has_image?'🖼':'—'}</td>
       <td>
-        <button class="btn ghost" style="padding:6px 10px" onclick='editQuestion(${{JSON.stringify(String(it.id))}})'>编辑</button>
-        <button class="btn danger" style="padding:6px 10px" onclick='removeQuestion(${{JSON.stringify(String(it.id))}})'>删</button>
+        <button class="btn ghost" style="padding:6px 10px" onclick='editQuestion(${JSON.stringify(String(it.id))})'>编辑</button>
+        <button class="btn danger" style="padding:6px 10px" onclick='removeQuestion(${JSON.stringify(String(it.id))})'>删</button>
       </td>
     </tr>`).join('');
-  }}
+  }
   const pager=document.getElementById('qPager');
   const pages=j.pages||1;
   pager.innerHTML=`
-    <button class="btn ghost" ${{j.page<=1?'disabled':''}} onclick="loadQuestions(${{Math.max(1,(j.page||1)-1)}})">上一页</button>
-    <span class="muted">第 ${{j.page}} / ${{pages}} 页（共 ${{j.total}} 题）</span>
-    <button class="btn ghost" ${{j.page>=pages?'disabled':''}} onclick="loadQuestions(${{(j.page||1)+1}})">下一页</button>
+    <button class="btn ghost" ${j.page<=1?'disabled':''} onclick="loadQuestions(${Math.max(1,(j.page||1)-1)})">上一页</button>
+    <span class="muted">第 ${j.page} / ${pages} 页（共 ${j.total} 题）</span>
+    <button class="btn ghost" ${j.page>=pages?'disabled':''} onclick="loadQuestions(${(j.page||1)+1})">下一页</button>
     <button class="btn ghost" onclick="document.getElementById('qSearch').value='';document.getElementById('qSubject').value='';loadQuestions(1);">清空筛选</button>`;
-}}
-function openEditor(item){{
+}
+function openEditor(item){
   document.getElementById('editorBox').style.display='block';
   document.getElementById('editorTitle').textContent=item?'编辑题目 #'+item.id:'新增题目';
   document.getElementById('e_id').value=item&&item.id!=null?item.id:'';
@@ -599,24 +905,24 @@ function openEditor(item){{
   document.getElementById('e_a').value=(item&&item.a!=null)?(Array.isArray(item.a)?item.a.join('|'):item.a):'';
   document.getElementById('e_image').value=(item&&item.image)||'';
   document.getElementById('e_choices').value=((item&&item.choices)||[]).join('\\n');
-  document.getElementById('editorBox').scrollIntoView({{behavior:'smooth'}});
-}}
-function closeEditor(){{ document.getElementById('editorBox').style.display='none'; }}
-async function editQuestion(id){{
-  try{{
-    const r=await fetch('/api/admin/questions/'+encodeURIComponent(id),{{headers:headers()}});
+  document.getElementById('editorBox').scrollIntoView({behavior:'smooth'});
+}
+function closeEditor(){ document.getElementById('editorBox').style.display='none'; }
+async function editQuestion(id){
+  try{
+    const r=await fetch('/api/admin/questions/'+encodeURIComponent(id),{headers:headers()});
     const j=await r.json();
-    if(!r.ok){{ document.getElementById('msg-banks').innerHTML='<span class="err">'+(j.error||'读取失败')+'</span>'; return; }}
-    if(!j.item){{ document.getElementById('msg-banks').innerHTML='<span class="err">题目数据为空</span>'; return; }}
+    if(!r.ok){ document.getElementById('msg-banks').innerHTML='<span class="err">'+(j.error||'读取失败')+'</span>'; return; }
+    if(!j.item){ document.getElementById('msg-banks').innerHTML='<span class="err">题目数据为空</span>'; return; }
     openEditor(j.item);
-  }}catch(e){{
+  }catch(e){
     document.getElementById('msg-banks').innerHTML='<span class="err">读取失败：'+(e&&e.message?e.message:e)+'</span>';
-  }}
-}}
-async function saveQuestion(){{
+  }
+}
+async function saveQuestion(){
   const idRaw=document.getElementById('e_id').value.trim();
   const choices=document.getElementById('e_choices').value.split(/\\n/).map(s=>s.trim()).filter(Boolean);
-  const body={{
+  const body={
     type:document.getElementById('e_type').value,
     subject:document.getElementById('e_subject').value.trim(),
     unit:document.getElementById('e_unit').value.trim(),
@@ -624,60 +930,60 @@ async function saveQuestion(){{
     a:document.getElementById('e_a').value.trim(),
     choices:choices,
     image:document.getElementById('e_image').value.trim()||undefined,
-  }};
+  };
   if(idRaw!=='') body.id=Number(idRaw)||idRaw;
   const url=idRaw!==''?('/api/admin/questions/'+encodeURIComponent(idRaw)):'/api/admin/questions';
-  const r=await fetch(url,{{method:'POST',headers:headers(),body:JSON.stringify(body)}});
+  const r=await fetch(url,{method:'POST',headers:headers(),body:JSON.stringify(body)});
   const j=await r.json();
   document.getElementById('msg-banks').innerHTML=r.ok?'<span class="ok">已保存 #'+(j.item&&j.item.id)+'</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ closeEditor(); loadQuestions(qPage); loadAdmin(); }}
-}}
-async function removeQuestion(id){{
+  if(r.ok){ closeEditor(); loadQuestions(qPage); loadAdmin(); }
+}
+async function removeQuestion(id){
   if(!confirm('确定删除题目 #'+id+'？')) return;
-  const r=await fetch('/api/admin/questions/'+encodeURIComponent(id),{{method:'DELETE',headers:headers()}});
+  const r=await fetch('/api/admin/questions/'+encodeURIComponent(id),{method:'DELETE',headers:headers()});
   const j=await r.json();
   document.getElementById('msg-banks').innerHTML=r.ok?'<span class="ok">已删除</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ loadQuestions(qPage); loadAdmin(); }}
-}}
-async function exportBank(){{
-  const r=await fetch('/api/admin/export',{{headers:headers()}});
-  if(!r.ok){{ const j=await r.json(); document.getElementById('msg-banks').innerHTML='<span class="err">'+(j.error||'导出失败')+'</span>'; return; }}
+  if(r.ok){ loadQuestions(qPage); loadAdmin(); }
+}
+async function exportBank(){
+  const r=await fetch('/api/admin/export',{headers:headers()});
+  if(!r.ok){ const j=await r.json(); document.getElementById('msg-banks').innerHTML='<span class="err">'+(j.error||'导出失败')+'</span>'; return; }
   const blob=await r.blob();
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download='bank-export.json';
   a.click();
-}}
-async function importActive(merge){{
-  const r=await fetch('/api/admin/import_active',{{method:'POST',headers:headers(),
-    body:JSON.stringify({{json:document.getElementById('import').value, merge:!!merge}})}});
+}
+async function importActive(merge){
+  const r=await fetch('/api/admin/import_active',{method:'POST',headers:headers(),
+    body:JSON.stringify({json:document.getElementById('import').value, merge:!!merge})});
   const j=await r.json();
   document.getElementById('msg-banks').innerHTML=r.ok?'<span class="ok">已导入 '+j.count+' 题 → '+j.path+'</span>':'<span class="err">'+(j.error||'失败')+'</span>';
-  if(r.ok){{ loadQuestions(1); loadAdmin(); }}
-}}
+  if(r.ok){ loadQuestions(1); loadAdmin(); }
+}
 
-// auto resume session
-(async function(){{
-  const t=localStorage.getItem('studyonpc_token');
+// auto resume session from Cookie / localStorage
+(async function(){
+  const t=loadToken();
   if(!t) return;
   token=t;
-  const r=await fetch('/api/admin/config',{{headers:headers()}});
-  if(r.ok){{
-    document.getElementById('login').style.display='none';
-    document.getElementById('panel').style.display='block';
-    loadAdmin(); loadDash(); loadQuestions(1); setInterval(loadDash,5000);
-  }} else {{
-    localStorage.removeItem('studyonpc_token');
-  }}
-}})();
-document.getElementById('pw').addEventListener('keydown',e=>{{ if(e.key==='Enter') doLogin(); }});
-document.getElementById('qSearch').addEventListener('keydown',e=>{{ if(e.key==='Enter'){{ e.preventDefault(); loadQuestions(1); }} }});
+  try{
+    const r=await fetch('/api/admin/config',{headers:headers()});
+    if(r.ok){
+      saveToken(t); // refresh cookie expiry
+      document.getElementById('login').style.display='none';
+      document.getElementById('panel').style.display='block';
+      loadAdmin(); loadDash(); loadQuestions(1); setInterval(loadDash,5000);
+    } else {
+      saveToken('');
+    }
+  }catch(e){ /* keep token for offline retry */ }
+})();
+document.getElementById('pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('qSearch').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); loadQuestions(1); } });
 </script>
 </body></html>
-"""
-
-
-
+""".replace("__CSS__", _CSS)
 class AdminContext:
     def __init__(
         self,
@@ -697,11 +1003,13 @@ class AdminContext:
         export_bank=None,
         import_active=None,
         add_bonus=None,
+        force_challenge=None,
     ):
         self.get_status = get_status
         self.get_config = get_config
         self.save_config = save_config
         self.force_quiz = force_quiz
+        self.force_challenge = force_challenge or force_quiz
         self.request_quit = request_quit
         self.list_banks = list_banks
         self.import_bank = import_bank
@@ -794,6 +1102,48 @@ def _make_handler(ctx: AdminContext):
                 if not self._auth():
                     return self._json(401, {"error": "未登录"})
                 return self._json(200, {"lines": ctx.get_answers()})
+            if path == "/api/admin/wrongbook":
+                if not self._auth():
+                    return self._json(401, {"error": "未登录"})
+                from . import wrong_book
+                filt = ((qs.get("filter") or ["open"])[0] or "open").strip().lower()
+                if filt not in ("open", "all", "mastered", "unmastered", "active"):
+                    filt = "open"
+                try:
+                    cfg = ctx.get_config() if hasattr(ctx, "get_config") else {}
+                    wrong_book.enrich_stems_from_bank(cfg if isinstance(cfg, dict) else {})
+                    wrong_book.backfill_wrong_choices_from_answers()
+                except Exception:
+                    pass
+                items = wrong_book.list_entries(filt)
+                return self._json(200, {"items": items, "counts": wrong_book.counts(), "filter": filt})
+            if path == "/api/admin/stats":
+                if not self._auth():
+                    return self._json(401, {"error": "未登录"})
+                from . import usage_stats
+                range_name = ((qs.get("range") or ["day"])[0] or "day").strip().lower()
+                if range_name not in ("day", "week", "month"):
+                    range_name = "day"
+                anchor = ((qs.get("date") or qs.get("anchor") or [None])[0] or None)
+                if isinstance(anchor, str):
+                    anchor = anchor.strip() or None
+                try:
+                    try:
+                        st = ctx.get_status()
+                        usage_stats.sync_from_state(
+                            {
+                                "daily_date": st.get("daily_date"),
+                                "daily_used_minutes": st.get("daily_used_minutes"),
+                                "today_unlock_minutes": st.get("today_unlock_minutes"),
+                                "today_bonus_minutes": st.get("today_bonus_minutes"),
+                                "site_daily_used": st.get("site_daily_used") or {},
+                            }
+                        )
+                    except Exception:
+                        pass
+                    return self._json(200, usage_stats.summarize(range_name, anchor))
+                except Exception as e:
+                    return self._json(400, {"error": str(e)})
             if path in ("/api/admin/questions", "/api/questions"):
                 if not self._auth():
                     return self._json(401, {"error": "未登录"})
@@ -875,8 +1225,15 @@ def _make_handler(ctx: AdminContext):
                     return self._json(200, {"ok": True, **result})
                 except Exception as e:
                     return self._json(400, {"error": str(e)})
+            if path == "/api/admin/wrongbook/clear_mastered":
+                from . import wrong_book
+                removed = wrong_book.clear_mastered()
+                return self._json(200, {"ok": True, "removed": removed})
             if path == "/api/admin/force_quiz":
                 ctx.force_quiz()
+                return self._json(200, {"ok": True})
+            if path == "/api/admin/force_challenge":
+                ctx.force_challenge()
                 return self._json(200, {"ok": True})
             if path == "/api/admin/bonus":
                 try:

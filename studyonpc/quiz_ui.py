@@ -16,6 +16,8 @@ from . import bank as bank_mod
 from . import pinyin_ui as pyui
 from . import rules as rules_mod
 from .paths import ANSWER_LOG
+from .quiz_voice import QuizVoice
+from . import tts as tts_mod
 
 log = logging.getLogger("studyonpc.quiz_ui")
 
@@ -43,15 +45,44 @@ except Exception:
     ImageTk = None  # type: ignore
 
 
-def log_answer(qid, subject, correct: bool, chosen: str, expected: str) -> None:
+def log_answer(
+    qid,
+    subject,
+    correct: bool,
+    chosen: str,
+    expected: str,
+    *,
+    mode: str = "normal",
+    unit: str = "",
+    site_id: str = "",
+    stem: str = "",
+) -> None:
     ANSWER_LOG.parent.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    stem_s = " ".join(str(stem or "").replace("|", "/").split())
+    if len(stem_s) > 160:
+        stem_s = stem_s[:157] + "..."
     line = (
-        f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | "
+        f"{now.strftime('%Y-%m-%d %H:%M:%S')} | "
         f"id={qid} | {subject} | {'OK' if correct else 'WRONG'} | "
-        f"chose={chosen!r} | expect={expected!r}\n"
+        f"chose={chosen!r} | expect={expected!r} | "
+        f"mode={mode or 'normal'} | unit={unit or ''} | site={site_id or ''} | "
+        f"q={stem_s!r}\n"
     )
     with open(ANSWER_LOG, "a", encoding="utf-8") as f:
         f.write(line)
+    try:
+        from . import usage_stats
+        usage_stats.note_answer(
+            correct=bool(correct),
+            subject=str(subject or ""),
+            mode=str(mode or "normal"),
+            unit=str(unit or ""),
+            site_id=str(site_id or ""),
+            when=now,
+        )
+    except Exception:
+        pass
 
 
 class QuizSetRunner:
@@ -68,6 +99,10 @@ class QuizSetRunner:
         on_parent_quit: Callable[[], None],
         site_id: str | None = None,
         speak_fn: Callable[[str], None] | None = None,
+        tts_config: dict[str, Any] | None = None,
+        challenge_mode: bool = False,
+        challenge_questions: int = 5,
+        challenge_reward_minutes: float = 10.0,
     ):
         self.root = root
         self.questions = questions
@@ -78,6 +113,13 @@ class QuizSetRunner:
         self.on_parent_quit = on_parent_quit
         self.site_id = site_id
         self.speak_fn = speak_fn
+        self.tts_config = dict(tts_config or {})
+        self._voice = None
+        self._voice_timer = None
+        self._voice_label = None
+        self.challenge_mode = bool(challenge_mode)
+        self.challenge_questions = max(1, int(challenge_questions or 5))
+        self.challenge_reward_minutes = max(0.0, float(challenge_reward_minutes or 10.0))
         self.set_qs: list[dict[str, Any]] = []
         self.idx = 0
         self.correct_count = 0
@@ -119,9 +161,24 @@ class QuizSetRunner:
         self._quiz_frame: tk.Frame | None = None
 
     def start(self) -> None:
-        n = rules_mod.set_size(self.state, self.rules)
+        if self.challenge_mode:
+            n = self.challenge_questions  # 大闯关固定题数，不含 pending_extra
+        else:
+            n = rules_mod.set_size(self.state, self.rules)
         recent = list(self.state.get("recent_ids") or [])
-        self.set_qs = bank_mod.pick_set(self.questions, n, recent)
+        prefer_ids: list = []
+        try:
+            from . import wrong_book
+            open_ids = wrong_book.open_question_ids()
+            if self.challenge_mode:
+                # 大闯关最多混入 1 道未掌握错题，优先保证闯关题库节奏
+                import random as _rnd
+                prefer_ids = _rnd.sample(open_ids, 1) if open_ids else []
+            else:
+                prefer_ids = list(open_ids)
+        except Exception:
+            prefer_ids = []
+        self.set_qs = bank_mod.pick_set(self.questions, n, recent, prefer_ids=prefer_ids)
         for q in self.set_qs:
             qid = q.get("id")
             if qid is not None:
@@ -129,8 +186,78 @@ class QuizSetRunner:
         self.state["recent_ids"] = recent[-32:]
         self.idx = 0
         self.correct_count = 0
-        log.info("quiz set start n=%d pending_extra=%s", n, self.state.get("pending_extra"))
+        log.info(
+            "quiz set start mode=%s n=%d pending_extra=%s",
+            "challenge" if self.challenge_mode else "normal",
+            n,
+            self.state.get("pending_extra"),
+        )
+        if tts_mod.tts_configured(self.tts_config):
+            self._voice = QuizVoice(self.tts_config, self.set_qs)
         self._show_current()
+        self._poll_voice()
+
+
+    def _on_speak(self) -> None:
+        if self._answered:
+            return
+        if self._voice:
+            # Manual replay must interrupt auto-read / in-flight audio.
+            self._voice.request_play(force=True)
+        elif self._voice_label is not None:
+            self._voice_label.configure(text="语音未配置，可继续答题")
+
+    def _poll_voice(self):
+        if self._voice is None or self._voice.closed:
+            return
+        if self._voice_label is not None:
+            self._voice_label.configure(text=self._voice.poll())
+        self._voice_timer = self.root.after(60, self._poll_voice)
+
+    def _close_voice(self):
+        if self._voice is not None:
+            self._voice.close()
+        if self._voice_timer is not None:
+            try:
+                self.root.after_cancel(self._voice_timer)
+            except Exception:
+                pass
+            self._voice_timer = None
+
+    def _bind_question_voice(self):
+        # Bind the whole question zone (host + children). No Motion binding and no
+        # recolor, so we do not revive the old hover flicker. Leave is debounced so
+        # moving between pinyin/hanzi children does not drop the zone.
+        zone = self._q_zone if getattr(self, "_q_zone", None) is not None else self._q_host
+
+        def enter(_event):
+            if self._voice is not None and not self._answered:
+                self._voice.hover_enter()
+
+        def check_leave():
+            if self._voice is None or self._voice.closed:
+                return
+            try:
+                x, y = zone.winfo_pointerxy()
+                inside = (
+                    zone.winfo_rootx() <= x < zone.winfo_rootx() + max(zone.winfo_width(), 1)
+                    and zone.winfo_rooty() <= y < zone.winfo_rooty() + max(zone.winfo_height(), 1)
+                )
+                if not inside:
+                    self._voice.hover_leave()
+            except Exception:
+                pass
+
+        def leave(_event):
+            self.root.after(40, check_leave)
+
+        def bind_tree(widget):
+            widget.bind("<Enter>", enter, add="+")
+            widget.bind("<Leave>", leave, add="+")
+            for child in widget.winfo_children():
+                bind_tree(child)
+
+        bind_tree(zone)
 
 
     def _on_speak(self) -> None:
@@ -203,9 +330,11 @@ class QuizSetRunner:
         if pin.strip() != self.parent_pin:
             messagebox.showerror("错误", "PIN 不对。小朋友请继续答题～", parent=self.root)
             return
+        self._close_voice()
         self.on_parent_quit()
 
     def _close_win(self) -> None:
+        self._close_voice()
         self._gate_token += 1
         if self._win is not None:
             try:
@@ -360,8 +489,11 @@ class QuizSetRunner:
         body.pack(fill="both", expand=True)
         self._body = body
 
-        self._q_host = tk.Frame(body, bg=CARD_BG)
-        self._q_host.pack(pady=(22, 10), padx=20)
+        # Wider hit target so "移到题目上" works even near the padding around the prompt.
+        self._q_zone = tk.Frame(body, bg=CARD_BG, highlightthickness=0)
+        self._q_zone.pack(pady=(22, 10), padx=12, fill="x")
+        self._q_host = tk.Frame(self._q_zone, bg=CARD_BG)
+        self._q_host.pack(padx=12, pady=12)
 
         self._img_host = tk.Frame(body, bg="#FFF8E1", padx=8, pady=8)
         # packed only when an image is present
@@ -407,6 +539,12 @@ class QuizSetRunner:
             command=self._on_speak,
         )
         self._speak_btn.pack()
+        self._voice_label = tk.Label(speak_row, text="", bg=CARD_BG,
+                                     fg="#546E7A", font=pyui.preferred_font(11))
+        self._voice_label.pack()
+        self._win.bind("<Destroy>", lambda e: self._close_voice()
+                       if e.widget is self._win else None, add="+")
+
 
         # Fixed 2x2 option grid — widgets stay forever
         self._btn_frame = tk.Frame(body, bg=CARD_BG)
@@ -508,7 +646,10 @@ class QuizSetRunner:
                     pass
         emoji = theme.get("emoji") or "⭐"
         sticker = theme.get("sticker") or "🌈"
-        self._title_lbl.configure(text=f"{emoji} 先学再看 ✨", bg=h, fg="#4A148C")
+        if self.challenge_mode:
+            self._title_lbl.configure(text=f"{emoji} 大闯关 🏁", bg=h, fg="#4A148C")
+        else:
+            self._title_lbl.configure(text=f"{emoji} 先学再看 ✨", bg=h, fg="#4A148C")
         if self._sticker_lbl is not None:
             try:
                 self._sticker_lbl.configure(
@@ -774,6 +915,10 @@ class QuizSetRunner:
         else:
             self._prep_single(q, theme)
 
+        self._bind_question_voice()
+        if self._voice is not None:
+            self._voice.show(self.idx)
+
         try:
             win.focus_force()
             win.lift()
@@ -954,6 +1099,8 @@ class QuizSetRunner:
         if self._answered:
             return
         self._answered = True
+        if self._voice is not None:
+            self._voice.stop()
         # Freeze controls in place (no destroy)
         self._gate_token += 1
         for b in self._choice_btns:
@@ -971,7 +1118,36 @@ class QuizSetRunner:
 
         ok = bank_mod.check_answer(q, response)
         expected = q.get("a")
-        log_answer(q.get("id"), q.get("subject", ""), ok, str(response), str(expected))
+        log_answer(
+            q.get("id"),
+            q.get("subject", ""),
+            ok,
+            str(response),
+            str(expected),
+            mode="challenge" if self.challenge_mode else "normal",
+            unit=str(q.get("unit") or ""),
+            site_id=str(self.site_id or ""),
+            stem=str(q.get("q") or ""),
+        )
+        try:
+            from . import wrong_book
+            wb_kwargs = dict(
+                subject=str(q.get("subject") or ""),
+                stem=str(q.get("q") or ""),
+                correct_answer=expected,
+                site_id=str(self.site_id or ""),
+                mode="challenge" if self.challenge_mode else "normal",
+            )
+            if ok:
+                wrong_book.note_correct(q.get("id"), **wb_kwargs)
+            else:
+                wrong_book.note_wrong(
+                    q.get("id"),
+                    chosen_answer=response,
+                    **wb_kwargs,
+                )
+        except Exception:
+            pass
         rules_mod.record_answer(self.state, self.rules, ok)
         if ok:
             self.correct_count += 1
@@ -986,18 +1162,29 @@ class QuizSetRunner:
             win.after(750, self._show_current)
 
     def _finish_set(self) -> None:
+        self._close_voice()
         n = len(self.set_qs)
         passed = rules_mod.passed_set(self.correct_count, n, self.rules)
         grant = 0.0
         if passed:
-            grant = rules_mod.grant_unlock(self.state, self.rules, self.site_id)
+            if self.challenge_mode:
+                grant = rules_mod.grant_challenge_reward(self.state, self.challenge_reward_minutes)
+            else:
+                grant = rules_mod.grant_unlock(self.state, self.rules, self.site_id)
         log.info(
-            "quiz set done correct=%d/%d passed=%s grant=%.1f",
+            "quiz set done mode=%s correct=%d/%d passed=%s grant=%.1f",
+            "challenge" if self.challenge_mode else "normal",
             self.correct_count,
             n,
             passed,
             grant,
         )
+        try:
+            from . import usage_stats
+            usage_stats.note_set(challenge=bool(self.challenge_mode), passed=bool(passed), grant=float(grant or 0))
+            usage_stats.sync_from_state(self.state)
+        except Exception:
+            pass
         win = self._ensure_shell()
 
         # Hide quiz chrome, show result on same window (no flash to desktop)
@@ -1022,13 +1209,16 @@ class QuizSetRunner:
 
         if passed:
             title = f"太棒了！对了 {self.correct_count}/{n} 题"
-            sub = f"解锁观看 {grant:.0f} 分钟　去看吧"
+            if self.challenge_mode:
+                sub = f"大闯关成功　加时 {grant:.0f} 分钟　去看吧"
+            else:
+                sub = f"解锁观看 {grant:.0f} 分钟　去看吧"
             color = "#2E7D32"
             btn_text = "🎉 去看吧！"
             emoji = "🌟"
         else:
             need = rules_mod.required_correct(n, self.rules)
-            title = f"本组 {self.correct_count}/{n} 题"
+            title = f"{'大闯关' if self.challenge_mode else '本组'} {self.correct_count}/{n} 题"
             sub = f"还需要答对 {need} 题　再来一组"
             color = "#C62828"
             btn_text = "💪 再答一组"

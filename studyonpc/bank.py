@@ -102,6 +102,10 @@ def normalize_question(raw: dict[str, Any], fallback_id: int) -> dict[str, Any] 
     }
     if raw.get("image"):
         item["image"] = str(raw["image"]).replace("\\", "/")
+    if raw.get("grade") is not None:
+        item["grade"] = raw.get("grade")
+    if raw.get("tags"):
+        item["tags"] = list(raw.get("tags") or [])
     return item
 
 
@@ -121,9 +125,13 @@ def load_bank_file(path: Path) -> list[dict[str, Any]]:
     return out
 
 
+DEFAULT_BANK_FILE = "data/banks/grade1-shenzhen.json"
+DEFAULT_CHALLENGE_BANK_FILE = "data/banks/grade2-challenge.json"
+
+
 def resolve_bank_path(cfg: dict[str, Any]) -> Path:
     ensure_runtime_dirs()
-    rel = cfg.get("bank_file") or "data/banks/grade1-shenzhen.json"
+    rel = cfg.get("bank_file") or DEFAULT_BANK_FILE
     p = Path(rel)
     if p.is_absolute():
         return p
@@ -145,6 +153,40 @@ def load_questions(cfg: dict[str, Any]) -> list[dict[str, Any]]:
     return qs
 
 
+def resolve_challenge_bank_path(cfg: dict[str, Any]) -> Path:
+    """大闯关题库路径（默认二年级）；缺文件时回退到普通 bank_file。"""
+    ensure_runtime_dirs()
+    rel = cfg.get("challenge_bank_file") or DEFAULT_CHALLENGE_BANK_FILE
+    p = Path(rel)
+    if p.is_absolute():
+        return p if p.exists() else resolve_bank_path(cfg)
+    local = APP_DIR / p
+    if local.exists():
+        return local
+    bundled = RESOURCE_ROOT / p
+    if bundled.exists():
+        return bundled
+    # 缺大闯关库时回退一年级，避免启动失败
+    log.warning("challenge bank missing (%s), falling back to normal bank", rel)
+    return resolve_bank_path(cfg)
+
+
+def load_challenge_questions(cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    path = resolve_challenge_bank_path(cfg)
+    qs = load_bank_file(path)
+    if not qs:
+        raise RuntimeError(f"大闯关题库为空: {path}")
+    log.info("loaded %d challenge questions from %s", len(qs), path)
+    return qs
+
+
+def questions_for_mode(cfg: dict[str, Any], challenge_mode: bool) -> list[dict[str, Any]]:
+    """普通答题用 bank_file；大闯关用 challenge_bank_file。"""
+    if challenge_mode:
+        return load_challenge_questions(cfg)
+    return load_questions(cfg)
+
+
 def resolve_image(path_str: str) -> Path | None:
     if not path_str:
         return None
@@ -158,27 +200,69 @@ def resolve_image(path_str: str) -> Path | None:
     return None
 
 
+def _qid_match_map(questions: list[dict[str, Any]]) -> dict[Any, dict[str, Any]]:
+    """Map id and str(id) -> question for prefer-id lookup."""
+    by: dict[Any, dict[str, Any]] = {}
+    for q in questions:
+        qid = q.get("id")
+        if qid is None:
+            continue
+        by[qid] = q
+        by[str(qid)] = q
+        try:
+            by[int(qid)] = q
+        except Exception:
+            pass
+    return by
+
+
 def pick_set(
     questions: list[dict[str, Any]],
     n: int,
     recent_ids: list[Any],
+    prefer_ids: list[Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """Pick n questions avoiding recent ids when possible."""
+    """Pick n questions avoiding recent ids when possible.
+
+    prefer_ids: optional question ids to take first (e.g. unmastered wrong-book),
+    still restricted to questions present in the current bank/pool.
+    """
     if n <= 0:
         return []
+    by_id = _qid_match_map(questions)
+    out: list[dict[str, Any]] = []
+    used: set[Any] = set()
+    prefer_pool: list[dict[str, Any]] = []
+    for pid in prefer_ids or []:
+        q = by_id.get(pid)
+        if q is None:
+            q = by_id.get(str(pid))
+        if q is None:
+            continue
+        qid = q.get("id")
+        if qid in used:
+            continue
+        used.add(qid)
+        prefer_pool.append(q)
+    random.shuffle(prefer_pool)
+    out.extend(prefer_pool[:n])
+    if len(out) >= n:
+        return out[:n]
+
+    need = n - len(out)
     recent = set(recent_ids or [])
-    pool = [q for q in questions if q.get("id") not in recent]
-    if len(pool) < n:
-        pool = list(questions)
-    if len(pool) <= n:
-        # shuffle copy
-        out = list(pool)
-        random.shuffle(out)
-        # if still short, allow repeats from full bank
+    pool = [q for q in questions if q.get("id") not in recent and q.get("id") not in used]
+    if len(pool) < need:
+        pool = [q for q in questions if q.get("id") not in used]
+    if len(pool) <= need:
+        rest = list(pool)
+        random.shuffle(rest)
+        out.extend(rest)
         while len(out) < n and questions:
             out.append(random.choice(questions))
         return out[:n]
-    return random.sample(pool, n)
+    out.extend(random.sample(pool, need))
+    return out[:n]
 
 
 def check_answer(q: dict[str, Any], response: Any) -> bool:
@@ -404,7 +488,7 @@ def upsert_question(cfg: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]
 
     if not path.exists() or str(RESOURCE_ROOT) in str(path.resolve()):
         # copy path under APP_DIR
-        rel = cfg.get("bank_file") or "data/banks/grade1-shenzhen.json"
+        rel = cfg.get("bank_file") or DEFAULT_BANK_FILE
         path = APP_DIR / rel
         path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
@@ -441,7 +525,7 @@ def delete_question(cfg: dict[str, Any], qid: int | str) -> bool:
     # Ensure writable path
     try:
         if not os.access(path, os.W_OK):
-            rel = cfg.get("bank_file") or "data/banks/grade1-shenzhen.json"
+            rel = cfg.get("bank_file") or DEFAULT_BANK_FILE
             path = APP_DIR / rel
     except Exception:
         pass
@@ -466,7 +550,7 @@ def replace_bank_from_import(cfg: dict[str, Any], text: str, *, merge: bool = Fa
     path = resolve_bank_path(cfg)
     from .paths import APP_DIR
 
-    rel = cfg.get("bank_file") or "data/banks/grade1-shenzhen.json"
+    rel = cfg.get("bank_file") or DEFAULT_BANK_FILE
     path = APP_DIR / rel
     path.parent.mkdir(parents=True, exist_ok=True)
 

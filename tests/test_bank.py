@@ -13,9 +13,12 @@ sys.path.insert(0, str(ROOT))
 from studyonpc.bank import (  # noqa: E402
     check_answer,
     load_bank_file,
+    load_challenge_questions,
     load_questions,
     normalize_question,
     pick_set,
+    questions_for_mode,
+    resolve_challenge_bank_path,
     resolve_image,
 )
 from studyonpc.config import load_config  # noqa: E402
@@ -74,6 +77,33 @@ class TestBank(unittest.TestCase):
         qs = load_questions(cfg)
         picked = pick_set(qs, 3, [])
         self.assertEqual(len(picked), 3)
+
+    def test_load_challenge_grade2(self):
+        cfg = load_config()
+        path = resolve_challenge_bank_path(cfg)
+        self.assertTrue(path.exists(), msg=str(path))
+        qs = load_challenge_questions(cfg)
+        self.assertGreaterEqual(len(qs), 60)
+        # 大闯关以二年级数学为主
+        math_n = sum(1 for q in qs if q.get("subject") == "数学")
+        self.assertGreaterEqual(math_n, 50)
+        grades = {q.get("grade") for q in qs if q.get("grade") is not None}
+        self.assertIn(2, grades)
+
+    def test_mode_banks_differ(self):
+        cfg = load_config()
+        normal = questions_for_mode(cfg, False)
+        challenge = questions_for_mode(cfg, True)
+        self.assertGreaterEqual(len(normal), 50)
+        self.assertGreaterEqual(len(challenge), 60)
+        n_ids = {q["id"] for q in normal[:20]}
+        # 不同文件：抽题池路径不同即可
+        self.assertNotEqual(
+            resolve_challenge_bank_path(cfg).name,
+            "grade1-shenzhen.json",
+        )
+        picked = pick_set(challenge, 5, [])
+        self.assertEqual(len(picked), 5)
 
 
 if __name__ == "__main__":

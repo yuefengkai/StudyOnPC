@@ -18,6 +18,7 @@ import logging
 import os
 import subprocess
 import threading
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Any
@@ -44,6 +45,8 @@ DEFAULT_TTS: dict[str, Any] = {
     "encoding": "mp3",
     "sample_rate": 24000,
     "system_fallback": True,
+    "speech_rate": 0,
+    "loudness_rate": 0,
 }
 
 CACHE_DIR_NAME = "tts_cache"
@@ -70,6 +73,11 @@ def normalize_tts(cfg: dict[str, Any]) -> dict[str, Any]:
     except Exception:
         out["sample_rate"] = 24000
     out["system_fallback"] = bool(out.get("system_fallback", True))
+    for field in ("speech_rate", "loudness_rate"):
+        try:
+            out[field] = max(-50, min(100, int(out.get(field) or 0)))
+        except (TypeError, ValueError):
+            out[field] = 0
     # Do not carry V1 secrets into the live config object (avoid accidental reuse).
     for k in _LEGACY_V1_KEYS:
         out.pop(k, None)
@@ -88,13 +96,39 @@ def cache_dir() -> Path:
     return d
 
 
+def _speech_text(text: str) -> str:
+    text = (text or "").strip()
+    return text[:200] + "…" if len(text.encode("utf-8")) > 900 else text
+
+
 def _cache_key(text: str, tts: dict[str, Any]) -> str:
-    h = hashlib.sha256(
-        f"{tts.get('speaker')}|{tts.get('resource_id')}|{tts.get('encoding')}|{text}".encode(
-            "utf-8"
-        )
-    ).hexdigest()
-    return f"{h}.mp3"
+    # Versioned canonical request identity, never the API key or credentials.
+    cfg = normalize_tts({"tts": dict(tts)})
+    fields = ("provider", "api_url", "speaker", "resource_id", "encoding",
+              "sample_rate", "speech_rate", "loudness_rate")
+    identity = {k: cfg[k] for k in fields}
+    identity.update(version=2, text=_speech_text(text))
+    return hashlib.sha256(json.dumps(identity, sort_keys=True,
+                                    ensure_ascii=False).encode("utf-8")).hexdigest() + ".mp3"
+
+
+# Striped locks bound memory while deduplicating concurrent callers for the same key.
+_CACHE_LOCKS = [threading.Lock() for _ in range(32)]
+
+
+def _atomic_audio_write(path: Path, audio: bytes) -> None:
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=".tts-", suffix=".tmp",
+                                         delete=False) as stream:
+            tmp = Path(stream.name)
+            stream.write(audio)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(tmp, path)
+    finally:
+        if tmp is not None:
+            tmp.unlink(missing_ok=True)
 
 
 def _parse_sse_audio(raw: bytes) -> bytes | None:
@@ -114,19 +148,21 @@ def _parse_sse_audio(raw: bytes) -> bytes | None:
             obj = json.loads(json_str)
         except Exception:
             continue
+        if obj.get("code", 0) not in (0, 20000000):
+            return None
         b64 = obj.get("data")
         if isinstance(b64, str) and b64:
             try:
-                audio.extend(base64.b64decode(b64))
+                audio.extend(base64.b64decode(b64, validate=True))
             except Exception:
-                continue
+                return None
     return bytes(audio) if audio else None
 
 
-def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
+def _synthesize_locked(text: str, tts: dict[str, Any] | None = None) -> Path | None:
     """Call Volcengine TTS V3 SSE; return path to cached mp3 or None."""
     tts = normalize_tts({"tts": dict(tts or {})})
-    text = (text or "").strip()
+    text = _speech_text(text)
     if not text:
         return None
     if not tts_configured(tts):
@@ -148,6 +184,8 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
             "audio_params": {
                 "format": tts.get("encoding") or "mp3",
                 "sample_rate": int(tts.get("sample_rate") or 24000),
+                "speech_rate": tts["speech_rate"],
+                "loudness_rate": tts["loudness_rate"],
             },
         },
     }
@@ -182,8 +220,19 @@ def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
         preview = payload[:300].decode("utf-8", errors="replace") if payload else ""
         log.warning("tts no audio from SSE: %s", preview)
         return None
-    path.write_bytes(audio)
+    if len(audio) <= 32:
+        return None
+    _atomic_audio_write(path, audio)
     return path
+
+
+def synthesize(text: str, tts: dict[str, Any] | None = None) -> Path | None:
+    """Thread-safe persistent cache; network and atomic write happen under one key lock."""
+    cfg = normalize_tts({"tts": dict(tts or {})})
+    key = _cache_key(text, cfg)
+    lock = _CACHE_LOCKS[int(key[:8], 16) % len(_CACHE_LOCKS)]
+    with lock:
+        return _synthesize_locked(text, cfg)
 
 
 def _play_windows_mci(path: Path) -> bool:

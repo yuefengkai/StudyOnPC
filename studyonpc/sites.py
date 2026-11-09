@@ -10,7 +10,7 @@ DEFAULT_YOUTUBE_SITE: dict[str, Any] = {
     "name": "YouTube",
     "enabled": True,
     "keywords": ["youtube", "youtu.be"],
-    "unlock_minutes_per_set": 10,
+    "unlock_minutes_per_set": 5,
     "daily_max_minutes": 60,
     "questions_per_set": 3,
     "pass_ratio": 0.6667,

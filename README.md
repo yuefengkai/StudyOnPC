@@ -25,7 +25,7 @@
 ## 多站点与语音（v1）
 
 - **多站点 `sites[]`**：共享解锁余额；每个站点独立关键词、每组解锁分钟、每日上限、题数与及格线。旧配置的 `youtube_keywords` 会自动迁移成一个 YouTube 站点。
-- **家长管理页** `/admin`：可编辑站点、规则、题库；「今日加时」直接增加共享余额；可开关火山引擎 TTS。
+- **家长管理页** `/admin`：可编辑站点、规则、题库；「今日加时」增加共享余额并抬高今日有效上限；看满每日上限后可「大闯关」（固定 5 题，按 pass_ratio 约需对 4 题，过关加时 10 分钟）；可开关火山引擎 TTS。
 - **答题页「听一听」**：调用火山 / 字节跳动 openspeech **TTS V3 SSE**（`api_key` 只写在本地 `config.json`，示例见 `config.example.json`）。与 [CaptainChen](https://github.com/yuefengkai/CaptainChen) 同源协议。
 - 答题界面更童趣：更亮的配色、贴纸装饰、更大的选项按钮。
 

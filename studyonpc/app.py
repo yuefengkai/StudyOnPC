@@ -21,6 +21,7 @@ from . import tts as tts_mod
 from .paths import (
     ANSWER_LOG,
     FORCE_QUIZ_FLAG,
+    FORCE_CHALLENGE_FLAG,
     MAIN_PID,
     ROOT,
     STOP_FLAG,
@@ -68,7 +69,17 @@ class StudyApp:
         self.poll_ms = int(cfg.get("poll_ms", 2500))
         self.parent_pin = str(cfg.get("parent_pin", "changeme"))
         self.questions = bank_mod.load_questions(cfg)
+        try:
+            self.challenge_pool = bank_mod.load_challenge_questions(cfg)
+        except Exception as e:
+            log.warning("challenge bank load failed, using normal bank: %s", e)
+            self.challenge_pool = list(self.questions)
         self.state = load_state()
+        try:
+            from . import wrong_book
+            wrong_book.ensure_ready(self.cfg)
+        except Exception as e:
+            log.warning("wrong_book init: %s", e)
         self.state["running_since"] = datetime.now().isoformat(timespec="seconds")
         self.state["quiz_active"] = False
         save_state(self.state)
@@ -76,8 +87,11 @@ class StudyApp:
         self.in_quiz = False
         self.saved_mute: bool | None = None
         self.minimized: list[int] = []
+        self.did_pause_playback = False
         self.last_tick = time.monotonic()
         self._force_pending = False
+        self._challenge_pending = False
+        self._in_challenge = False
         self._admin = None
         self._httpd = None
 
@@ -103,9 +117,10 @@ class StudyApp:
             f"{cfg.get('admin_port', 8099)}"
         )
         log.info(
-            "main started pid=%s questions=%d balance=%.1f",
+            "main started pid=%s questions=%d challenge=%d balance=%.1f",
             os.getpid(),
             len(self.questions),
+            len(self.challenge_pool),
             float(self.state.get("balance_minutes", 0)),
         )
 
@@ -148,6 +163,9 @@ class StudyApp:
                 "parent_pin",
                 "admin_password",
                 "bank_file",
+                "challenge_bank_file",
+                "challenge_questions",
+                "challenge_reward_minutes",
                 "admin_port",
                 "youtube_keywords",
                 "sites",
@@ -188,18 +206,34 @@ class StudyApp:
             self.poll_ms = int(self.cfg.get("poll_ms", self.poll_ms))
             try:
                 self.questions = bank_mod.load_questions(self.cfg)
+                self.challenge_pool = bank_mod.load_challenge_questions(self.cfg)
             except Exception as e:
                 log.warning("reload bank: %s", e)
 
         def add_bonus(minutes: float):
             added = rules_mod.add_bonus_minutes(self.state, minutes)
             save_state(self.state)
+            try:
+                from . import usage_stats
+                if added:
+                    usage_stats.note_bonus(float(added))
+                usage_stats.sync_from_state(self.state)
+            except Exception:
+                pass
             return added
 
         def force_quiz():
             self._force_pending = True
             try:
                 FORCE_QUIZ_FLAG.write_text(datetime.now().isoformat(), encoding="utf-8")
+            except Exception:
+                pass
+
+        def force_challenge():
+            self._challenge_pending = True
+            self._force_pending = True
+            try:
+                FORCE_CHALLENGE_FLAG.write_text(datetime.now().isoformat(), encoding="utf-8")
             except Exception:
                 pass
 
@@ -221,19 +255,48 @@ class StudyApp:
             try:
                 if ANSWER_LOG.exists():
                     raw = ANSWER_LOG.read_text(encoding="utf-8").splitlines()
+                    q_cache: dict[str, str] = {}
+
+                    def _stem_for(qid: str) -> str:
+                        key = str(qid or "").strip()
+                        if not key:
+                            return ""
+                        if key in q_cache:
+                            return q_cache[key]
+                        stem = ""
+                        try:
+                            item = bank_mod.get_question(self.cfg, key)
+                            if item:
+                                stem = str(item.get("q") or "")
+                        except Exception:
+                            stem = ""
+                        q_cache[key] = stem
+                        return stem
+
                     for line in raw[-80:]:
-                        # 2026-11-05 20:06:01 | id=12 | 语文 | OK | chose='蓝色' | expect='蓝色'
+                        # 2026-11-05 20:06:01 | id=12 | 语文 | OK | chose='蓝色' | expect='蓝色' | ... | q='题干'
                         parts = [p.strip() for p in line.split("|")]
                         if len(parts) < 5:
                             continue
                         result = parts[3]
+                        extra = {}
+                        for p in parts[4:]:
+                            if "=" in p:
+                                k, _, v = p.partition("=")
+                                extra[k.strip().lower()] = v.strip().strip("'\"")
+                        qid = parts[1].replace("id=", "").strip()
+                        stem = extra.get("q") or extra.get("stem") or ""
+                        if not stem:
+                            stem = _stem_for(qid)
                         lines.append({
                             "time": parts[0],
-                            "id": parts[1].replace("id=", ""),
+                            "id": qid,
                             "subject": parts[2],
                             "ok": result == "OK",
-                            "chose": parts[4].replace("chose=", "").strip("'"),
-                            "expect": parts[5].replace("expect=", "").strip("'") if len(parts) > 5 else "",
+                            "chose": extra.get("chose", parts[4].replace("chose=", "").strip("'") if len(parts) > 4 else ""),
+                            "expect": extra.get("expect", ""),
+                            "q": stem,
+                            "mode": extra.get("mode", ""),
                         })
                 lines.reverse()
             except Exception as e:
@@ -243,6 +306,7 @@ class StudyApp:
         def reload_questions():
             try:
                 self.questions = bank_mod.load_questions(self.cfg)
+                self.challenge_pool = bank_mod.load_challenge_questions(self.cfg)
             except Exception as e:
                 log.warning("reload questions: %s", e)
 
@@ -276,6 +340,7 @@ class StudyApp:
             get_config=get_config,
             save_config=do_save,
             force_quiz=force_quiz,
+            force_challenge=force_challenge,
             request_quit=request_quit,
             list_banks=list_banks,
             import_bank=import_bank,
@@ -357,6 +422,13 @@ class StudyApp:
                 return
             now = time.monotonic()
             # force quiz flag / admin
+            if FORCE_CHALLENGE_FLAG.exists():
+                try:
+                    FORCE_CHALLENGE_FLAG.unlink(missing_ok=True)
+                except Exception:
+                    pass
+                self._challenge_pending = True
+                self._force_pending = True
             if FORCE_QUIZ_FLAG.exists():
                 try:
                     FORCE_QUIZ_FLAG.unlink(missing_ok=True)
@@ -400,9 +472,14 @@ class StudyApp:
                     self._force_pending = False
                     save_state(self.state)
                     self.root.after(0, self._start_quiz_set)
-                # persist balance periodically
+                # persist balance periodically + mirror today usage stats
                 if int(now) % 10 == 0:
                     save_state(self.state)
+                    try:
+                        from . import usage_stats
+                        usage_stats.sync_from_state(self.state)
+                    except Exception:
+                        pass
         except Exception as e:
             log.exception("poll error: %s", e)
         finally:
@@ -420,6 +497,28 @@ class StudyApp:
             log.warning("unmute for TTS: %s", e)
         tts_mod.speak(text, self.cfg.get("tts") or {})
 
+    def _challenge_params(self) -> tuple[int, float]:
+        n = rules_mod.challenge_questions(self.cfg)
+        reward = rules_mod.challenge_reward_minutes(self.cfg)
+        return n, reward
+
+    def _quiz_pool(self, challenge: bool) -> list:
+        """大闯关抽二年级 challenge_pool；普通答题抽一年级 questions。"""
+        if challenge:
+            return self.challenge_pool or self.questions
+        return self.questions
+
+
+    def _reinforce_pause(self, hwnds: list[int]) -> None:
+        if not self.in_quiz:
+            return
+        try:
+            if win_yt.pause_tracked_playback(list(hwnds or [])):
+                self.did_pause_playback = True
+                log.info("pause reinforce delayed hwnds=%s", hwnds)
+        except Exception as e:
+            log.warning("pause reinforce delayed: %s", e)
+
     def _start_quiz_set(self):
         if self.in_quiz:
             return
@@ -427,28 +526,51 @@ class StudyApp:
             self.active_site = default_site(self.cfg)
         self.rules = rules_mod.RulesConfig.from_site(self.active_site, self.cfg)
         site_id = str(self.active_site.get("id") or "")
+        # 今日有效额度用尽 → 大闯关；或家长手动点大闯关
+        challenge = bool(self._challenge_pending) or rules_mod.should_use_challenge(
+            self.state, self.rules, site_id
+        )
+        self._challenge_pending = False
+        self._in_challenge = challenge
+        cq, cr = self._challenge_params()
         kws = list(self.active_site.get("keywords") or []) or [k for s in enabled_sites(self.cfg) for k in (s.get("keywords") or [])]
         self.in_quiz = True
         self.state["quiz_active"] = True
         save_state(self.state)
-        log.info("quiz set start site=%s", site_id)
+        log.info("quiz set start site=%s challenge=%s", site_id, challenge)
         self.saved_mute = win_yt.get_system_mute()
-        # If TTS is on, keep system unmuted so「听一听」works. YouTube windows are minimized.
-        # Without TTS, mute the endpoint so background video audio cannot leak through.
+        # Pause video first (mute alone does not stop playback). Prefer pause over mute
+        # so TTS「听一听」can still play while YouTube is stopped.
+        yt_wins = win_yt.find_youtube_windows(kws)
+        hwnds = [h for h, _t in yt_wins]
+        # Absolute MEDIA_PAUSE (not Space toggle). Reinforce after minimize — safe to repeat.
+        try:
+            self.did_pause_playback = bool(win_yt.pause_tracked_playback(hwnds))
+        except Exception as e:
+            self.did_pause_playback = False
+            log.warning("pause playback: %s", e)
+        # If TTS is on, keep system unmuted so TTS is audible after pause.
+        # Without TTS, also mute as defense in depth against other audio.
         if tts_mod.tts_configured(self.cfg.get("tts") or {}):
             win_yt.set_system_mute(False)
-            log.info("quiz TTS enabled — system left unmuted")
+            log.info("quiz TTS enabled — paused media, system left unmuted")
         else:
             win_yt.set_system_mute(True)
         self.minimized = []
-        for hwnd, title in win_yt.find_youtube_windows(kws):
+        for hwnd, title in yt_wins:
             win_yt.minimize_hwnd(hwnd)
             self.minimized.append(hwnd)
             log.info("minimized %s", title[:60])
+        # Second pause pulse after minimize (APPCOMMAND works while iconic; absolute = no toggle flip).
+        try:
+            if win_yt.pause_tracked_playback(list(self.minimized) or hwnds):
+                self.did_pause_playback = True
+        except Exception as e:
+            log.warning("pause reinforce: %s", e)
 
         runner = QuizSetRunner(
             root=self.root,
-            questions=self.questions,
+            questions=self._quiz_pool(challenge),
             state=self.state,
             rules=self.rules,
             parent_pin=self.parent_pin,
@@ -456,18 +578,29 @@ class StudyApp:
             on_parent_quit=self._authorized_stop,
             site_id=site_id,
             speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
+            tts_config=self.cfg.get("tts") or {},
+            challenge_mode=challenge,
+            challenge_questions=cq,
+            challenge_reward_minutes=cr,
         )
         runner.start()
+        # Quiz window steals focus; one more absolute pause in case Chrome ignored the first.
+        try:
+            paused_hwnds = list(self.minimized) or hwnds
+            self.root.after(250, lambda h=paused_hwnds: self._reinforce_pause(h))
+        except Exception:
+            pass
 
     def _on_quiz_finished(self, passed: bool, grant: float):
         save_state(self.state)
         if not passed:
-            # immediately another set
-            log.info("set failed — starting another")
+            # immediately another set (keep 大闯关 mode if this was a challenge)
+            log.info("set failed — starting another challenge=%s", self._in_challenge)
             site_id = str((self.active_site or {}).get("id") or "")
+            cq, cr = self._challenge_params()
             runner = QuizSetRunner(
                 root=self.root,
-                questions=self.questions,
+                questions=self._quiz_pool(self._in_challenge),
                 state=self.state,
                 rules=self.rules,
                 parent_pin=self.parent_pin,
@@ -475,6 +608,10 @@ class StudyApp:
                 on_parent_quit=self._authorized_stop,
                 site_id=site_id,
                 speak_fn=self._speak if tts_mod.tts_configured(self.cfg.get("tts") or {}) else None,
+                tts_config=self.cfg.get("tts") or {},
+                challenge_mode=self._in_challenge,
+                challenge_questions=cq,
+                challenge_reward_minutes=cr,
             )
             runner.start()
             return
@@ -497,11 +634,11 @@ class StudyApp:
             except Exception:
                 pass
 
-        restored = set()
+        restored: list[int] = []
         for hwnd in list(self.minimized):
             try:
                 win_yt.restore_hwnd(hwnd)
-                restored.add(hwnd)
+                restored.append(hwnd)
             except Exception as e:
                 log.warning("restore %s: %s", hwnd, e)
         self.minimized = []
@@ -512,8 +649,17 @@ class StudyApp:
             for hwnd, _title in win_yt.find_youtube_windows(kws):
                 if hwnd not in restored:
                     win_yt.restore_hwnd(hwnd)
+                    restored.append(hwnd)
         except Exception as e:
             log.warning("rescan restore: %s", e)
+
+        # Absolute MEDIA_PLAY if we paused at quiz start (not toggle — avoids pause→play→pause).
+        if self.did_pause_playback:
+            try:
+                win_yt.resume_tracked_playback(restored)
+            except Exception as e:
+                log.warning("resume playback: %s", e)
+            self.did_pause_playback = False
 
         log.info("quiz passed grant=%.1f balance=%.1f", grant, float(self.state.get("balance_minutes", 0)))
 
