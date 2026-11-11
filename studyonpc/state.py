@@ -9,6 +9,7 @@ from datetime import date, datetime
 from typing import Any
 
 from .paths import STATE_PATH, ensure_runtime_dirs
+from .singleton import atomic_write_text
 
 log = logging.getLogger("studyonpc.state")
 
@@ -73,9 +74,9 @@ def save_state(st: dict[str, Any]) -> None:
             "site_daily_used": dict(st.get("site_daily_used") or {}),
             "updated_at": datetime.now().isoformat(timespec="seconds"),
         }
-        STATE_PATH.write_text(
+        atomic_write_text(
+            STATE_PATH,
             json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
         )
         st.update(payload)
 

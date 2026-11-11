@@ -633,7 +633,7 @@ def reexec_without_console(argv: list[str] | None = None) -> bool:
     return True
 
 
-def spawn_detached(args: list[str], cwd: str) -> None:
+def spawn_detached(args: list[str], cwd: str, raise_on_error: bool = False) -> None:
     creation = 0
     if IS_WINDOWS:
         if hasattr(subprocess, "CREATE_NO_WINDOW"):
@@ -651,3 +651,5 @@ def spawn_detached(args: list[str], cwd: str) -> None:
         )
     except Exception as e:
         log.warning("spawn failed: %s", e)
+        if raise_on_error:
+            raise

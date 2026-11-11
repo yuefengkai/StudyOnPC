@@ -683,6 +683,16 @@ def main(argv: list[str] | None = None) -> None:
     if "--watchdog" in argv:
         role = "watchdog"
 
+    from .singleton import MUTEX_NAMES, acquire_role_mutex
+
+    if not acquire_role_mutex(role):
+        log.info(
+            "another StudyOnPC %s instance already holds %s — exit",
+            role,
+            MUTEX_NAMES.get(role, role),
+        )
+        return
+
     if role == "watchdog":
         run_watchdog()
         return
